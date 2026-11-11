@@ -56,6 +56,6 @@ header#top {
     padding: 20px;
 }
 button#nl-badge {
-    display: none;
+    display: none !important;
 }
 .map{z-index:0}
