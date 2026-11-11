@@ -122,7 +122,7 @@ export default function App() {
 
       <section id="how">
         <div className="wrap">
-          <h2>วงจรง่ายๆ ที่ทำให้ไม่พลาดร้านอร่อย</h2>
+          <h2>วิธีใช้ง่ายๆ ที่ทำให้ไม่พลาดร้านอร่อย</h2>
           <div className="steps">
             {[["01", "หา", "เปิดแผนที่ เห็นร้านลาบรอบตัวทันที"], ["02", "ดูสี", "เขียว = คะแนนสูง เหลือง = พอใช้ ส้ม = ต่ำกว่า 4.0"], ["03", "กดดูรายละเอียด", "คะแนน จำนวนรีวิว เวลาเปิด-ปิด เบอร์โทร"], ["04", "นำทาง", "กดเดียวไป Google Maps ถึงหน้าร้าน"]].map(([n, t, d]) => (
               <div className="step" key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></div>
@@ -142,9 +142,10 @@ export default function App() {
           <div className="mapbox">
             <MapContainer ref={setMap} className="map" center={[15.3, 101]} zoom={6} minZoom={5}
                           zoomControl={false} maxBounds={[[3, 93], [23, 108]]}>
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                subdomains="abcd" maxZoom={19} attribution="© OpenStreetMap © CARTO" />
+               <TileLayer
+        attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
               <MapEvents onZoom={setZoom} onBlank={close} />
               {me && <CircleMarker center={me} radius={8} pathOptions={{ color: "#fff", weight: 3, fillColor: "#2a7de1", fillOpacity: 1 }} />}
               {showPins
