@@ -109,7 +109,7 @@ export default function App() {
             <button className="btn o" onClick={near}>📍 ร้านใกล้ฉัน</button>
           </div>
         </div>
-        <div className="phone">
+        {/* <div className="phone">
           <b>ใกล้คุณ</b>
           {[["var(--g)", "ลาบนัว", "⭐ 4.9 · เปิดถึง 23:00"], ["var(--y)", "ลาบก้อยซอยแซ่บ", "⭐ 4.1 · เปิด 24 ชม."], ["var(--o)", "โรงลาบ อุบล", "⭐ 3.9 · เปิด 24 ชม."]].map(([c, n, s]) => (
             <div className="row" key={n}>
@@ -117,7 +117,7 @@ export default function App() {
               <div><b>{n}</b><br /><small>{s}</small></div>
             </div>
           ))}
-        </div>
+        </div> */}
       </header>
 
       <section id="how">
