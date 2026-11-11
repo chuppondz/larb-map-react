@@ -32,7 +32,7 @@ export const pinIcon = (c, on) =>
     iconAnchor: [17, 40],
     html: `<svg class="pin" width="34" height="42" viewBox="0 0 34 42" style="${
       on ? "transform:scale(1.25);transform-origin:50% 100%" : ""
-    }"><path d="M17 41C8 29 3 23 3 15a14 14 0 0 1 28 0c0 8-5 14-14 26z" fill="${c}" stroke="#fff" stroke-width="2.5"/><text x="17" y="21" text-anchor="middle" font-size="14">🌿</text></svg>`,
+    }"><path d="M17 41C8 29 3 23 3 15a14 14 0 0 1 28 0c0 8-5 14-14 26z" fill="${c}" stroke="#fff" stroke-width="2.5"/><text x="17" y="21" text-anchor="middle" font-size="14">🌶️</text></svg>`,
   });
 
 export const cityIcon = (n, label) =>
