@@ -52,5 +52,7 @@ details{background:var(--card);border:1px solid var(--bd);border-radius:14px;pad
 summary{font-weight:600;cursor:pointer}details p{color:var(--mut);margin:8px 0 0}
 footer{border-top:1px solid var(--bd);padding:30px 0;color:var(--mut);font-size:13px}
 @media(max-width:760px){.hero{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}nav .links a.h{display:none}}
-
+header#top {
+    padding: 20px;
+}
 .map{z-index:0}
