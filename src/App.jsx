@@ -101,8 +101,8 @@ export default function App() {
 
       <header className="wrap hero" id="top">
         <div>
-          <span className="pill">🌿 ใช้ฟรี · ไม่ต้องสมัคร · ไม่ต้องโหลดแอป</span>
-          <h1>หิวตอนนี้ <em>หาร้านลาบ</em><br />ได้ใน 5 วินาที</h1>
+          <span className="pill">🌶️ ใช้ฟรี · ไม่ต้องสมัคร · ไม่ต้องโหลดแอป</span>
+          <h1>หิว<em>ลาบ!!!</em> หาร้าน<em>ลาบ</em><br />ได้ใน 5 วินาที</h1>
           <p>แผนที่ร้านลาบทั่วไทย บอกได้ว่าร้านไหนคะแนนดี เปิดกี่โมง โทรได้ไหม และนำทางไปถึงหน้าร้านได้ทันที</p>
           <div className="cta">
             <a className="btn" href="#map-section">ดูแผนที่เลย</a>
