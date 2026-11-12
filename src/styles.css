@@ -116,4 +116,6 @@ button#nl-badge {
 .legal p,.legal li{color:var(--tx);font-size:15px}
 .legal ul{padding-left:20px}.legal li{margin:6px 0}
 .legal a{color:var(--acc)}
-footer a{color:inherit}
+footer a{color:inherit}span.score {
+    color: white;
+}
