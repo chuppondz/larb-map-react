@@ -1,0 +1,9 @@
+// Cloudflare Workers (static assets): deploy โฟลเดอร์ dist ที่ได้จาก `npm run build`
+// "name" ต้องตรงกับชื่อ Worker ใน Cloudflare dashboard
+{
+  "name": "larb-map-react",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
