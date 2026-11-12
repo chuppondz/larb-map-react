@@ -109,3 +109,11 @@ button#nl-badge {
 .dup{margin-top:10px;font-size:14px;background:#efe8fc;border-radius:10px;padding:8px 10px}
 .err{margin-top:10px;font-size:14px;color:var(--acc2)}
 .btn:disabled{opacity:.6;cursor:wait}
+/* หน้านโยบาย */
+.legal{max-width:760px;padding-top:30px;padding-bottom:20px}
+.legal h1{font-size:clamp(28px,5vw,40px)}
+.legal h2{font-size:20px;margin:26px 0 6px}
+.legal p,.legal li{color:var(--tx);font-size:15px}
+.legal ul{padding-left:20px}.legal li{margin:6px 0}
+.legal a{color:var(--acc)}
+footer a{color:inherit}

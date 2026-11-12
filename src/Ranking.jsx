@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import "./styles.css";
 import Nav from "./Nav.jsx";
+import Footer from "./Footer.jsx";
 import { R } from "./data.js";
 import { color, score, rankByCity, matchCity } from "./utils.js";
 import { ENABLED, useUserShops, loadUserShops, byLikes } from "./userShops.js";
@@ -157,9 +158,7 @@ export default function Ranking({ city, q: q0 = "" }) {
                  onAdded={(s) => { setAdding(false); location.hash = `#/ranking/${enc(s.city)}`; }} />
       )}
 
-      <footer>
-        <div className="wrap">© ลาบแมป · แผนที่ © OpenStreetMap © CARTO · ข้อมูลร้านจาก Google Maps</div>
-      </footer>
+      <Footer />
     </>
   );
 }

@@ -8,6 +8,7 @@ import { ENABLED, useUserShops, loadUserShops } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
 import Nav from "./Nav.jsx";
+import Footer from "./Footer.jsx";
 
 const PIN_ZOOM = 10;
 const USER_FILTER = FILTERS.length; // ชิป "💜 จากผู้ใช้"
@@ -257,9 +258,7 @@ export default function App({ focus }) {
                  onAdded={(s) => { setAdding(false); setFilter(0); scrollToMap(); select(s); }} />
       )}
 
-      <footer>
-        <div className="wrap">© ลาบแมป · แผนที่ © OpenStreetMap © CARTO · ข้อมูลร้านจาก Google Maps</div>
-      </footer>
+      <Footer />
     </>
   );
 }

@@ -139,7 +139,11 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
         <button className="btn" disabled={busy} style={{ width: "100%", marginTop: 12 }}>
           {busy ? "กำลังดำเนินการ…" : "ปักหมุดร้านนี้"}
         </button>
-        <p className="note" style={{ marginTop: 8 }}>ร้านที่แนะนำจะแสดงให้ทุกคนเห็นทันที เป็นหมุดสีม่วง 👍</p>
+        <p className="note" style={{ marginTop: 8 }}>
+          ร้านที่แนะนำจะแสดงให้ทุกคนเห็นทันที เป็นหมุดสีม่วง 👍 · ข้อมูลที่ส่งเปิดเผยต่อสาธารณะ
+          กรุณาอย่าใส่ข้อมูลส่วนตัว เช่น ชื่อหรือเบอร์โทรของบุคคล ·{" "}
+          <a href="#/privacy" target="_blank" rel="noopener noreferrer">นโยบายความเป็นส่วนตัว</a>
+        </p>
       </form>
     </div>
   );
