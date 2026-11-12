@@ -6,6 +6,8 @@ import { useSyncExternalStore } from "react";
 const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 export const ENABLED = !!(BASE && KEY);
+// คีย์แบบเก่า (anon JWT "eyJ...") ส่งใน Authorization ได้; คีย์ใหม่ sb_publishable_ ส่งแค่ apikey
+const AUTH = KEY.startsWith("eyJ") ? { apikey: KEY, Authorization: `Bearer ${KEY}` } : { apikey: KEY };
 
 const LIKED_KEY = "larb-liked";
 const readLiked = () => {
@@ -28,7 +30,7 @@ export const byLikes = (a, b) => b.likes - a.likes || a.created_at.localeCompare
 async function api(path, opt = {}) {
   const r = await fetch(BASE + path, {
     ...opt,
-    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, "Content-Type": "application/json", ...opt.headers },
+    headers: { ...AUTH, "Content-Type": "application/json", ...opt.headers },
   });
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
   return r.status === 204 ? null : r.json();
