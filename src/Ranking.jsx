@@ -25,7 +25,7 @@ function Shop({ r, i, city }) {
         <div className="acts">
           <a className="p" target="_blank" rel="noopener noreferrer"
              href={`https://www.google.com/maps/dir/?api=1&destination=${r.la},${r.lo}&destination_place_id=${r.pid}`}>นำทาง</a>
-          <a href={`#/map/${enc(city)}/${enc(r.pid)}`}>ดูบนแผนที่</a>
+          <a href={`#/map/${enc(city)}/${enc(r.pid || "id" + r.id)}`}>ดูบนแผนที่</a>
         </div>
       </div>
     </li>
@@ -97,7 +97,7 @@ export default function Ranking({ city, q: q0 = "" }) {
                 <span><i style={{ background: "var(--o)" }} />ต่ำกว่า 4.0</span>
               </div>
               <ol className="rklist">
-                {RANKED[valid].map((r, i) => <Shop key={r.pid} r={r} i={i} city={valid} />)}
+                {RANKED[valid].map((r, i) => <Shop key={r.id} r={r} i={i} city={valid} />)}
               </ol>
               <p className="note" style={{ marginTop: 18 }}>
                 จัดอันดับจากดาวและจำนวนรีวิวบน Google Maps รวมกัน (Bayesian average) ร้านที่ได้ 5 ดาวแต่มีรีวิวน้อย

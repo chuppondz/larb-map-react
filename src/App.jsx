@@ -18,7 +18,8 @@ function MapEvents({ onZoom, onBlank }) {
 
 function Sheet({ r, dist, onClose }) {
   const tel = r.tel.replace(/\s/g, "");
-  const q = `${r.la},${r.lo}`;
+  // ร้านที่ยังไม่มี placeId: ให้ Google Maps ค้นด้วยชื่อร้านแทนพิกัดเปล่าๆ
+  const q = r.pid ? `${r.la},${r.lo}` : encodeURIComponent(`${r.name} ${r.city}`);
   return (
     <div className="sheet open">
       <button className="x" onClick={onClose} aria-label="ปิด">×</button>
@@ -78,7 +79,7 @@ export default function App({ focus }) {
   useEffect(() => {
     if (!map || !focus) return;
     scrollToMap();
-    const r = focus.pid && R.find((x) => x.pid === focus.pid);
+    const r = focus.pid && R.find((x) => x.pid === focus.pid || "id" + x.id === focus.pid);
     if (r) select(r);
     else if (allGroups[focus.city]) map.flyTo(centroid(allGroups[focus.city]), 12);
   }, [map, focus?.city, focus?.pid]);
