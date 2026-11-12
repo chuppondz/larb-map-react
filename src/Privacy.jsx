@@ -3,8 +3,7 @@ import "./styles.css";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 
-const FB = "https://www.facebook.com/Chuppondz";
-const MAIL = "aduzin@gmail.com";
+import { FB, MAIL } from "./contact.js";
 const UPDATED = "12 พฤศจิกายน 2569";
 
 export default function Privacy() {
