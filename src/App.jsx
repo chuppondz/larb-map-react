@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, CircleMarker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
 import { R } from "./data.js";
-import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon } from "./utils.js";
+import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon, rankHref } from "./utils.js";
+import Nav from "./Nav.jsx";
 
 const PIN_ZOOM = 10;
 
@@ -47,7 +48,7 @@ function Sheet({ r, dist, onClose }) {
   );
 }
 
-export default function App() {
+export default function App({ focus }) {
   const [map, setMap] = useState(null);
   const [zoom, setZoom] = useState(6);
   const [filter, setFilter] = useState(0);
@@ -58,6 +59,10 @@ export default function App() {
   const list = useMemo(() => R.filter(FILTERS[filter][1]), [filter]);
   const groups = useMemo(() => groupByCity(list), [list]);
   const allGroups = useMemo(() => groupByCity(R), []);
+  const cities = useMemo(() => Object.keys(allGroups).sort((a, b) => a.localeCompare(b, "th")), [allGroups]);
+  const [q, setQ] = useState("");
+
+  useEffect(() => { document.title = "ลาบแมป — หาร้านลาบทั่วไทย"; }, []);
 
   const scrollToMap = () => document.getElementById("map-section")?.scrollIntoView();
 
@@ -68,6 +73,15 @@ export default function App() {
     map.flyTo([r.la - 0.0012 * Math.pow(2, 14 - z), r.lo], z, { duration: 0.6 });
   };
   const close = () => { setSel(null); setDist(null); };
+
+  // มาจากหน้าอันดับ (#/map/<จังหวัด>/<placeId>): ซูมไปที่ร้าน/จังหวัดนั้น
+  useEffect(() => {
+    if (!map || !focus) return;
+    scrollToMap();
+    const r = focus.pid && R.find((x) => x.pid === focus.pid);
+    if (r) select(r);
+    else if (allGroups[focus.city]) map.flyTo(centroid(allGroups[focus.city]), 12);
+  }, [map, focus?.city, focus?.pid]);
 
   const near = () => {
     if (!navigator.geolocation) return alert("เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง");
@@ -87,17 +101,7 @@ export default function App() {
 
   return (
     <>
-      <nav>
-        <div className="wrap">
-          <a className="logo" href="#top">ลาบ<span>แมป</span></a>
-          <div className="links">
-            <a className="h" href="#how">ทำงานยังไง</a>
-            <a className="h" href="#provinces">จังหวัด</a>
-            <a className="h" href="#faq">คำถามที่พบบ่อย</a>
-            <a className="btn" href="#map-section">เปิดแผนที่</a>
-          </div>
-        </div>
-      </nav>
+      <Nav />
 
       <header className="wrap hero" id="top">
         <div>
@@ -108,6 +112,13 @@ export default function App() {
             <a className="btn" href="#map-section">ดูแผนที่เลย</a>
             <button className="btn o" onClick={near}>📍 ร้านใกล้ฉัน</button>
           </div>
+          <form className="search" role="search"
+                onSubmit={(e) => { e.preventDefault(); location.hash = rankHref(q, cities); }}>
+            <input type="search" list="city-list" value={q} onChange={(e) => setQ(e.target.value)}
+                   placeholder="🏆 ค้นหาจังหวัด ดู Top 10 ร้านลาบ" aria-label="ค้นหาจังหวัด" />
+            <datalist id="city-list">{cities.map((c) => <option key={c} value={c} />)}</datalist>
+            <button className="btn">ดูอันดับ</button>
+          </form>
         </div>
         {/* <div className="phone">
           <b>ใกล้คุณ</b>
@@ -176,7 +187,9 @@ export default function App() {
       <section id="provinces" style={{ paddingTop: 10 }}>
         <div className="wrap">
           <h2>ร้านลาบแยกตามพื้นที่</h2>
-          <p style={{ color: "var(--mut)", margin: 0 }}>แตะเพื่อซูมไปดูร้านในพื้นที่นั้น</p>
+          <p style={{ color: "var(--mut)", margin: 0 }}>
+            แตะเพื่อซูมไปดูร้านในพื้นที่นั้น · <a href="#/ranking" style={{ color: "var(--acc)", fontWeight: 600 }}>ดูอันดับ Top 10 รายจังหวัด →</a>
+          </p>
           <div className="prov">
             {Object.entries(allGroups).sort((a, b) => b[1].length - a[1].length).map(([c, a]) => (
               <button key={c} onClick={() => { scrollToMap(); map?.flyTo(centroid(a), 12); }}>

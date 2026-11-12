@@ -59,3 +59,24 @@ button#nl-badge {
     display: none !important;
 }
 .map{z-index:0}
+/* ค้นหาจังหวัด + หน้าอันดับ */
+.search{display:flex;gap:8px;margin-top:16px;max-width:540px}
+.search input{flex:1;min-width:0;border:1.5px solid var(--bd);background:#fff;border-radius:28px;padding:10px 18px;font:inherit;font-size:16px;color:var(--tx)}
+.search input:focus{outline:none;border-color:var(--acc)}
+.rank-hero{padding:36px 18px 0}
+.note{color:var(--mut);font-size:13px;margin:0}
+.back{color:var(--mut);text-decoration:none;font-size:14px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:12px}
+.pcard{display:block;text-decoration:none;background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px 16px;transition:border-color .15s}
+.pcard:hover{border-color:var(--acc)}
+.pcard b{font-size:17px}
+.pcard .n{float:right;color:var(--acc);font-weight:700;font-size:13px;margin-top:3px}
+.pcard small{display:block;color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rklist{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:10px}
+.rk{display:flex;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px 16px}
+.rk .no{flex:none;width:40px;height:40px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:var(--mut)}
+.rk.top .no{font-size:28px;background:none}
+.rk .bd{flex:1;min-width:0}
+.rk h3{margin:0 0 2px;font-size:17px}
+.rk .acts{max-width:360px}
+@media(max-width:760px){.rk{gap:10px;padding:12px}.rk .no{width:32px}}

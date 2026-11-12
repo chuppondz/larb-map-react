@@ -42,3 +42,31 @@ export const cityIcon = (n, label) =>
     iconAnchor: [17, 17],
     html: `<div class="city">${n}</div>` + (label ? `<div class="cl">${label}</div>` : ""),
   });
+
+// คะแนนจัดอันดับ (Bayesian average) = (v/(v+m))*R + (m/(v+m))*C — สูตรเดียวกับใน data.js
+export const score = (r, m = 30, C = 4.54) => (r.n / (r.n + m)) * r.rate + (m / (r.n + m)) * C;
+
+// { จังหวัด: [ร้านเรียงตามคะแนนจัดอันดับ สูงสุด 10 ร้าน] }
+export const rankByCity = (list) => {
+  const g = groupByCity(list);
+  for (const c in g) g[c] = [...g[c]].sort((a, b) => score(b) - score(a)).slice(0, 10);
+  return g;
+};
+
+const ALIAS = { "กรุงเทพฯ": ["กรุงเทพมหานคร", "กทม", "bangkok", "bkk"] };
+const norm = (s) =>
+  s.trim().toLowerCase().replace(/^(จ\.|จังหวัด)\s*/, "").replace(/[\s.ฯ]/g, "");
+
+// ค้นหาจังหวัดแบบพิมพ์บางส่วนได้ เช่น "อยุธยา", "จ.เชียงใหม่", "กทม"
+export const matchCity = (c, q) => {
+  const n = norm(q);
+  return !n || [c, ...(ALIAS[c] || [])].some((a) => norm(a).includes(n));
+};
+
+// ลิงก์ไปหน้าอันดับ: ถ้าเจอจังหวัดเดียว (หรือพิมพ์ตรงชื่อ) ไปหน้าจังหวัดนั้นเลย ไม่งั้นไปหน้าผลค้นหา
+export const rankHref = (q, cities) => {
+  const m = cities.filter((c) => matchCity(c, q));
+  const exact = m.find((c) => norm(c) === norm(q));
+  if (exact || m.length === 1) return `#/ranking/${encodeURIComponent(exact || m[0])}`;
+  return q.trim() ? `#/ranking?q=${encodeURIComponent(q.trim())}` : "#/ranking";
+};
