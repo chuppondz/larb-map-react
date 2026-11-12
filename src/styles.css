@@ -55,9 +55,6 @@ footer{border-top:1px solid var(--bd);padding:30px 0;color:var(--mut);font-size:
 header#top {
     padding: 20px;
 }
-button#nl-badge {
-    display: none !important;
-}
 .map{z-index:0}
 /* ค้นหาจังหวัด + หน้าอันดับ */
 .search{display:flex;gap:8px;margin-top:16px;max-width:540px}
