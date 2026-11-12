@@ -70,3 +70,43 @@ export const rankHref = (q, cities) => {
   if (exact || m.length === 1) return `#/ranking/${encodeURIComponent(exact || m[0])}`;
   return q.trim() ? `#/ranking?q=${encodeURIComponent(q.trim())}` : "#/ranking";
 };
+
+// หมุดร้านแนะนำจากผู้ใช้: วงกลมสีม่วง 👍 + ยอดไลก์ (คนละแบบกับหมุดพริกของร้านจาก Google)
+export const userPinIcon = (likes, on) =>
+  L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div class="upin${on ? " on" : ""}">👍${likes > 0 ? `<b>${likes > 999 ? "999+" : likes}</b>` : ""}</div>`,
+  });
+
+export const inThailand = (lat, lng) => lat > 5 && lat < 21 && lng > 97 && lng < 106;
+
+const safeDecode = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
+
+// อ่านชื่อร้านและพิกัดจากลิงก์ Google Maps หรือข้อความพิกัด "13.75, 100.5"
+// คืน { short: true } ถ้าเป็นลิงก์สั้น (maps.app.goo.gl) ที่ต้องให้เซิร์ฟเวอร์แปลงก่อน
+export function parseMapsLink(text) {
+  const s = (text || "").trim();
+  let m = s.match(/^(-?\d{1,2}\.\d+)\s*,\s*(-?\d{2,3}\.\d+)$/);
+  if (m) return { lat: +m[1], lng: +m[2] };
+  const url = s.match(/https?:\/\/\S+/)?.[0]; // รองรับข้อความแชร์ที่มีชื่อร้านนำหน้าลิงก์
+  let u;
+  try { u = new URL(url); } catch { return null; }
+  if (/(^|\.)goo\.gl$/.test(u.hostname)) return { short: true, url: u.href };
+  if (!/(^|\.)google\.[a-z.]+$/.test(u.hostname) || !u.pathname.startsWith("/maps")) return null;
+  const full = safeDecode(u.href);
+  const out = { url: u.href, name: "" };
+  const place = u.pathname.match(/\/place\/([^/]+)/)?.[1];
+  if (place) out.name = safeDecode(place).replace(/\+/g, " ");
+  // !3d!4d = ตำแหน่งหมุดของร้าน (แม่นสุด, ใช้ตัวสุดท้าย) > @lat,lng = จุดกลางจอ > q=lat,lng
+  const pins = [...full.matchAll(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/g)];
+  m = pins[pins.length - 1] || full.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+    || full.match(/[?&](?:q|query|ll|destination)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/);
+  if (m) Object.assign(out, { lat: +m[1], lng: +m[2] });
+  if (!out.name) {
+    const q = u.searchParams.get("q") || u.searchParams.get("query");
+    if (q && !/^-?\d+\.\d+,/.test(q)) out.name = q;
+  }
+  return out;
+}

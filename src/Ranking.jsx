@@ -3,6 +3,9 @@ import "./styles.css";
 import Nav from "./Nav.jsx";
 import { R } from "./data.js";
 import { color, score, rankByCity, matchCity } from "./utils.js";
+import { ENABLED, useUserShops, loadUserShops, byLikes } from "./userShops.js";
+import LikeBtn from "./Like.jsx";
+import AddShop from "./AddShop.jsx";
 
 const RANKED = rankByCity(R);
 const CITIES = Object.keys(RANKED).sort((a, b) => a.localeCompare(b, "th"));
@@ -32,11 +35,35 @@ function Shop({ r, i, city }) {
   );
 }
 
+function UserShop({ r, i, city }) {
+  const url = r.maps_url && /^https:\/\//.test(r.maps_url) ? r.maps_url
+    : `https://www.google.com/maps/search/?api=1&query=${r.la},${r.lo}`;
+  return (
+    <li className="rk u">
+      <div className="no">{i + 1}</div>
+      <div className="bd">
+        <h3>{r.name}</h3>
+        <div className="r"><LikeBtn id={r.id} /> <span>👍 แนะนำโดยผู้ใช้</span></div>
+        {r.note && <div className="r">💬 {r.note}</div>}
+        <div className="acts">
+          <a className="p" target="_blank" rel="noopener noreferrer" href={url}>Google Maps</a>
+          <a href={`#/map/${enc(city)}/${enc("u:" + r.id)}`}>ดูบนแผนที่</a>
+        </div>
+      </div>
+    </li>
+  );
+}
+
 export default function Ranking({ city, q: q0 = "" }) {
+  const { shops, loaded, error } = useUserShops();
+  const [adding, setAdding] = useState(false);
+  useEffect(() => { loadUserShops(); }, []);
+  const userCount = useMemo(() => shops.reduce((m, s) => ((m[s.city] = (m[s.city] || 0) + 1), m), {}), [shops]);
   const [q, setQ] = useState(q0);
   useEffect(() => setQ(q0), [q0, city]);
 
   const valid = city && RANKED[city] ? city : null;
+  const userTop = useMemo(() => shops.filter((s) => s.city === valid).sort(byLikes), [shops, valid]);
   const matches = useMemo(() => CITIES.filter((c) => matchCity(c, q)), [q]);
   const showGrid = !valid || q.trim();
 
@@ -76,7 +103,7 @@ export default function Ranking({ city, q: q0 = "" }) {
                     const t = RANKED[c][0];
                     return (
                       <a className="pcard" key={c} href={`#/ranking/${enc(c)}`}>
-                        <span className="n">{RANKED[c].length} ร้าน</span>
+                        <span className="n">{RANKED[c].length} ร้าน{userCount[c] ? ` · 👍 ${userCount[c]}` : ""}</span>
                         <b>{c}</b>
                         <small>🥇 {t.name} · ⭐ {t.rate.toFixed(1)}</small>
                       </a>
@@ -103,10 +130,32 @@ export default function Ranking({ city, q: q0 = "" }) {
                 จัดอันดับจากดาวและจำนวนรีวิวบน Google Maps รวมกัน (Bayesian average) ร้านที่ได้ 5 ดาวแต่มีรีวิวน้อย
                 จะไม่ถูกดันขึ้นอันดับต้นเกินจริง · ข้อมูล ณ วันที่รวบรวม เวลาเปิด-ปิดอาจเปลี่ยนแปลง
               </p>
+
+              {ENABLED && (
+                <div className="usec">
+                  <div className="uhead">
+                    <h2>👍 ร้านแนะนำจากผู้ใช้</h2>
+                    <button className="btn" onClick={() => setAdding(true)}>➕ แนะนำร้าน</button>
+                  </div>
+                  <p className="note">เรียงตามยอดไลก์ · กด 🤍 ให้ร้านที่ชอบเพื่อดันขึ้นอันดับ</p>
+                  {!loaded ? <p className="note">กำลังโหลด…</p>
+                    : error ? <p className="note">โหลดร้านแนะนำไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>
+                    : userTop.length ? (
+                      <ol className="rklist">
+                        {userTop.map((r, i) => <UserShop key={r.id} r={r} i={i} city={valid} />)}
+                      </ol>
+                    ) : <p>ยังไม่มีร้านแนะนำใน จ.{valid} — เป็นคนแรกที่แนะนำเลย!</p>}
+                </div>
+              )}
             </>
           )}
         </div>
       </section>
+
+      {adding && (
+        <AddShop city={valid || ""} onClose={() => setAdding(false)}
+                 onAdded={(s) => { setAdding(false); location.hash = `#/ranking/${enc(s.city)}`; }} />
+      )}
 
       <footer>
         <div className="wrap">© ลาบแมป · แผนที่ © OpenStreetMap © CARTO · ข้อมูลร้านจาก Google Maps</div>

@@ -80,3 +80,32 @@ button#nl-badge {
 .rk h3{margin:0 0 2px;font-size:17px}
 .rk .acts{max-width:360px}
 @media(max-width:760px){.rk{gap:10px;padding:12px}.rk .no{width:32px}}
+/* ร้านแนะนำจากผู้ใช้ */
+:root{--u:#7a4bd8}
+.upin{position:relative;width:32px;height:32px;border-radius:50%;background:var(--u);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 6px #0006;transition:transform .15s}
+.upin.on{transform:scale(1.3)}
+.upin b{position:absolute;top:-8px;right:-12px;background:#fff;color:var(--u);border:1.5px solid var(--u);border-radius:10px;font-size:10px;line-height:14px;padding:0 4px;font-family:'Noto Sans Thai',system-ui,sans-serif}
+.ubadge{display:inline-block;background:#efe8fc;color:var(--u);border-radius:10px;padding:0 8px;font-size:12px;font-weight:600}
+.like{border:1.5px solid var(--bd);background:#fff;border-radius:18px;padding:2px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--tx)}
+.like.on{border-color:#e0245e;background:#fff0f4}
+.like b{font-weight:700}
+.chip.u.on{background:var(--u);border-color:var(--u)}
+.fab.add{right:auto;left:12px;background:var(--u)}
+.usec{margin-top:34px;padding-top:24px;border-top:1px dashed var(--bd)}
+.uhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.uhead h2{margin:0}
+.rk.u{border-color:#d9ccf5}
+.rk.u .no{background:#efe8fc;color:var(--u)}
+.rk.u .acts a.p{background:var(--u);border-color:var(--u)}
+.modal{position:fixed;inset:0;z-index:3000;background:#0007;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+@media(min-width:600px){.modal{align-items:center}}
+.mcard{position:relative;width:100%;max-width:460px;max-height:calc(100vh - 32px);overflow:auto;background:var(--card);border-radius:20px;padding:18px}
+.mcard h3{margin:0 30px 4px 0}
+.mcard label{display:block;font-size:13px;font-weight:600;margin-top:10px}
+.mcard input,.mcard select{display:block;width:100%;margin-top:4px;border:1.5px solid var(--bd);background:#fff;border-radius:12px;padding:9px 12px;font:inherit;font-size:16px;color:var(--tx)}
+.mcard input:focus,.mcard select:focus{outline:none;border-color:var(--u)}
+.row2{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.mini{height:150px;border-radius:12px;overflow:hidden;margin-top:10px;border:1px solid var(--bd)}
+.dup{margin-top:10px;font-size:14px;background:#efe8fc;border-radius:10px;padding:8px 10px}
+.err{margin-top:10px;font-size:14px;color:var(--acc2)}
+.btn:disabled{opacity:.6;cursor:wait}

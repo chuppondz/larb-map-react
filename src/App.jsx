@@ -3,10 +3,36 @@ import { MapContainer, TileLayer, Marker, CircleMarker, useMapEvents } from "rea
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
 import { R } from "./data.js";
-import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon, rankHref } from "./utils.js";
+import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon, rankHref, userPinIcon } from "./utils.js";
+import { ENABLED, useUserShops, loadUserShops } from "./userShops.js";
+import LikeBtn from "./Like.jsx";
+import AddShop from "./AddShop.jsx";
 import Nav from "./Nav.jsx";
 
 const PIN_ZOOM = 10;
+const USER_FILTER = FILTERS.length; // ชิป "💜 จากผู้ใช้"
+const safeUrl = (u) => (u && /^https:\/\//.test(u) ? u : null);
+const distTxt = (d) => (d == null ? "" : ` · ห่าง ${d < 1 ? Math.round(d * 1000) + " ม." : d.toFixed(1) + " กม."}`);
+
+function UserSheet({ r, dist, onClose }) {
+  const q = `${r.la},${r.lo}`;
+  return (
+    <div className="sheet open">
+      <button className="x" onClick={onClose} aria-label="ปิด">×</button>
+      <span className="ubadge">👍 แนะนำโดยผู้ใช้</span>
+      <h3>{r.name}</h3>
+      <div className="r"><LikeBtn id={r.id} /> <span>{r.city}{distTxt(dist)}</span></div>
+      {r.note && <div className="r">💬 {r.note}</div>}
+      <div className="acts">
+        <a className="p" target="_blank" rel="noopener noreferrer"
+           href={`https://www.google.com/maps/dir/?api=1&destination=${q}`}>นำทาง</a>
+        <a target="_blank" rel="noopener noreferrer"
+           href={safeUrl(r.maps_url) || `https://www.google.com/maps/search/?api=1&query=${q}`}>Google Maps</a>
+      </div>
+      <div className="src">ข้อมูลจากผู้ใช้ ยังไม่ได้ตรวจสอบ · กดไลก์เพื่อดันร้านขึ้นอันดับ</div>
+    </div>
+  );
+}
 
 function MapEvents({ onZoom, onBlank }) {
   const map = useMapEvents({
@@ -28,13 +54,7 @@ function Sheet({ r, dist, onClose }) {
         <span className="score" style={{ background: color(r.rate) }}>{r.rate.toFixed(1)}</span>
         {"★".repeat(Math.round(r.rate))} <span>({r.n.toLocaleString()} รีวิว)</span>
       </div>
-      <div className="r">
-        📍 {r.area}{" "}
-        <span>
-          · {r.city}
-          {dist != null && ` · ห่าง ${dist < 1 ? Math.round(dist * 1000) + " ม." : dist.toFixed(1) + " กม."}`}
-        </span>
-      </div>
+      <div className="r">📍 {r.area} <span>· {r.city}{distTxt(dist)}</span></div>
       <div className="r">🕒 {r.hrs}</div>
       {r.tel && <div className="r">📞 <a href={`tel:${tel}`}>{r.tel}</a></div>}
       <div className="acts">
@@ -57,7 +77,14 @@ export default function App({ focus }) {
   const [dist, setDist] = useState(null);
   const [me, setMe] = useState(null);
 
-  const list = useMemo(() => R.filter(FILTERS[filter][1]), [filter]);
+  const [adding, setAdding] = useState(false);
+  const { shops } = useUserShops();
+  useEffect(() => { loadUserShops(); }, []);
+
+  const userMode = filter === USER_FILTER;
+  const official = useMemo(() => (userMode ? [] : R.filter(FILTERS[filter][1])), [filter]);
+  const userList = ENABLED && (filter === 0 || userMode) ? shops : [];
+  const list = useMemo(() => [...official, ...userList], [official, userList]);
   const groups = useMemo(() => groupByCity(list), [list]);
   const allGroups = useMemo(() => groupByCity(R), []);
   const cities = useMemo(() => Object.keys(allGroups).sort((a, b) => a.localeCompare(b, "th")), [allGroups]);
@@ -79,10 +106,14 @@ export default function App({ focus }) {
   useEffect(() => {
     if (!map || !focus) return;
     scrollToMap();
-    const r = focus.pid && R.find((x) => x.pid === focus.pid || "id" + x.id === focus.pid);
-    if (r) select(r);
+    const pid = focus.pid || "";
+    const r = pid.startsWith("u:")
+      ? shops.find((x) => "u:" + x.id === pid)
+      : pid && R.find((x) => x.pid === pid || "id" + x.id === pid);
+    if (pid.startsWith("u:") && !r && !shops.length) return; // รอโหลดร้านจากผู้ใช้ก่อน
+    if (r) { if (r.user) setFilter(0); select(r); }
     else if (allGroups[focus.city]) map.flyTo(centroid(allGroups[focus.city]), 12);
-  }, [map, focus?.city, focus?.pid]);
+  }, [map, focus?.city, focus?.pid, shops.length > 0]);
 
   const near = () => {
     if (!navigator.geolocation) return alert("เบราว์เซอร์นี้ไม่รองรับการระบุตำแหน่ง");
@@ -150,6 +181,7 @@ export default function App({ focus }) {
             <span><i style={{ background: "var(--g)" }} />4.5 ขึ้นไป · แนะนำ</span>
             <span><i style={{ background: "var(--y)" }} />4.0–4.4 · พอใช้</span>
             <span><i style={{ background: "var(--o)" }} />ต่ำกว่า 4.0 · ทำใจ</span>
+            {ENABLED && <span><i style={{ background: "var(--u)" }} />👍 แนะนำโดยผู้ใช้</span>}
           </div>
           <div className="mapbox">
             <MapContainer ref={setMap} className="map" center={[15.3, 101]} zoom={6} minZoom={5}
@@ -162,7 +194,9 @@ export default function App({ focus }) {
               {me && <CircleMarker center={me} radius={8} pathOptions={{ color: "#fff", weight: 3, fillColor: "#2a7de1", fillOpacity: 1 }} />}
               {showPins
                 ? list.map((r) => (
-                    <Marker key={r.id} position={[r.la, r.lo]} icon={pinIcon(color(r.rate), sel?.id === r.id)}
+                    <Marker key={(r.user ? "u" : "o") + r.id} position={[r.la, r.lo]}
+                            icon={r.user ? userPinIcon(r.likes, sel?.id === r.id) : pinIcon(color(r.rate), sel?.id === r.id)}
+                            zIndexOffset={r.user ? 500 : 0}
                             eventHandlers={{ click: (e) => { e.originalEvent.stopPropagation?.(); select(r); } }} />
                   ))
                 : Object.entries(groups).map(([c, a]) => {
@@ -178,9 +212,14 @@ export default function App({ focus }) {
                 <button key={t} className={"chip" + (i === filter ? " on" : "")}
                         onClick={() => { setFilter(i); close(); }}>{t}</button>
               ))}
+              {ENABLED && (
+                <button className={"chip u" + (userMode ? " on" : "")}
+                        onClick={() => { setFilter(USER_FILTER); close(); }}>👍 จากผู้ใช้ ({shops.length})</button>
+              )}
             </div>
             <button className="btn fab" onClick={near}>📍 ร้านใกล้ฉัน</button>
-            {sel && <Sheet r={sel} dist={dist} onClose={close} />}
+            {ENABLED && !sel && <button className="btn fab add" onClick={() => setAdding(true)}>➕ แนะนำร้าน</button>}
+            {sel && (sel.user ? <UserSheet r={sel} dist={dist} onClose={close} /> : <Sheet r={sel} dist={dist} onClose={close} />)}
           </div>
         </div>
       </section>
@@ -212,6 +251,11 @@ export default function App({ focus }) {
           ))}
         </div>
       </section>
+
+      {adding && (
+        <AddShop onClose={() => setAdding(false)}
+                 onAdded={(s) => { setAdding(false); setFilter(0); scrollToMap(); select(s); }} />
+      )}
 
       <footer>
         <div className="wrap">© ลาบแมป · แผนที่ © OpenStreetMap © CARTO · ข้อมูลร้านจาก Google Maps</div>
