@@ -27,6 +27,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [manual, setManual] = useState(false); // แสดงช่องพิกัดเฉพาะตอนลิงก์ไม่มีพิกัด หรือผู้ใช้อยากแก้เอง
 
   const pos = parseCoords(coords);
   const okPos = pos && inThailand(pos[0], pos[1]);
@@ -39,7 +40,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
     if (p.name && !name) setName(p.name.slice(0, 80));
     if (p.lat != null) {
       setCoords(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
-      if (!city0) setCity(nearestCity(p.lat, p.lng));
+      setCity(nearestCity(p.lat, p.lng)); // จังหวัดตามตำแหน่งจริงของร้าน แม้จะเปิดฟอร์มจากหน้าจังหวัดอื่น
     }
   };
 
@@ -54,21 +55,27 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
         const full = await resolveShortLink(p.url);
         const q = parseMapsLink(full);
         if (q) apply(q);
-        if (!q || q.lat == null) setMsg("อ่านพิกัดจากลิงก์ไม่ได้ กรุณาใส่พิกัดเอง (กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลข)");
+        if (!q || q.lat == null) { setManual(true); setMsg("อ่านพิกัดจากลิงก์ไม่ได้ กรุณาใส่พิกัดเอง (กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลข)"); }
       } catch {
+        setManual(true);
         setMsg("เปิดลิงก์สั้นไม่สำเร็จ กรุณาใส่พิกัดเอง (กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลข)");
       } finally { setBusy(false); }
       return;
     }
     apply(p);
-    if (p.lat == null) setMsg("ลิงก์นี้ไม่มีพิกัด กรุณาใส่พิกัดเอง");
+    if (p.lat == null) { setManual(true); setMsg("ลิงก์นี้ไม่มีพิกัด กรุณาใส่พิกัดเอง (กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลข)"); }
   };
 
   const submit = async (e) => {
     e.preventDefault();
     const n = name.trim();
     if (n.length < 2) return setMsg("กรุณาใส่ชื่อร้าน");
-    if (!okPos) return setMsg("พิกัดไม่ถูกต้อง หรืออยู่นอกประเทศไทย");
+    if (!okPos) {
+      if (link.trim() && !coords && !manual) return readLink(link); // กดปักหมุดทันทีหลังวางลิงก์
+      if (!link.trim() && !coords) return setMsg("กรุณาวางลิงก์ Google Maps ของร้าน");
+      setManual(true);
+      return setMsg("พิกัดไม่ถูกต้อง หรืออยู่นอกประเทศไทย");
+    }
     if (!city) return setMsg("กรุณาเลือกจังหวัด");
     if (dupUser || dupOfficial) return setMsg("ร้านนี้มีอยู่บนแผนที่แล้ว");
     setBusy(true);
@@ -96,17 +103,24 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
           <input value={link} placeholder="https://maps.app.goo.gl/..." autoFocus
                  onChange={(e) => setLink(e.target.value)}
                  onPaste={(e) => { const t = e.clipboardData.getData("text"); setTimeout(() => readLink(t)); }}
+                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); readLink(link); } }}
                  onBlur={() => link && readLink(link)} />
         </label>
+        {!manual && !okPos && (
+          <p className="note">ไม่ต้องใส่พิกัด เว็บจะอ่านตำแหน่งจากลิงก์ให้ ·{" "}
+            <button type="button" className="linkbtn" onClick={() => setManual(true)}>ไม่มีลิงก์? ใส่พิกัดเอง</button></p>
+        )}
 
         <label>ชื่อร้าน *
           <input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="เช่น ลาบเป็ดหน้าวัด" />
         </label>
 
-        <div className="row2">
-          <label>พิกัด *
-            <input value={coords} onChange={(e) => setCoords(e.target.value)} placeholder="13.756331, 100.501765" inputMode="decimal" />
-          </label>
+        <div className={manual ? "row2" : ""}>
+          {manual && (
+            <label>พิกัด *
+              <input value={coords} onChange={(e) => setCoords(e.target.value)} placeholder="13.756331, 100.501765" inputMode="decimal" />
+            </label>
+          )}
           <label>จังหวัด *
             <select value={city} onChange={(e) => setCity(e.target.value)}>
               <option value="">เลือก</option>
@@ -115,6 +129,10 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
           </label>
         </div>
 
+        {okPos && !manual && (
+          <p className="note" style={{ marginTop: 10 }}>📍 ได้ตำแหน่งจากลิงก์แล้ว ·{" "}
+            <button type="button" className="linkbtn" onClick={() => setManual(true)}>แก้พิกัด</button></p>
+        )}
         {okPos && (
           <div className="mini">
             <MapContainer key={coords} center={pos} zoom={16} zoomControl={false} dragging={false}
