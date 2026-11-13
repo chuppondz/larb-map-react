@@ -10,14 +10,17 @@ export const ENABLED = !!(BASE && KEY);
 const AUTH = KEY.startsWith("eyJ") ? { apikey: KEY, Authorization: `Bearer ${KEY}` } : { apikey: KEY };
 
 const LIKED_KEY = "larb-liked";
-const readLiked = () => {
-  try { return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) || "[]")); } catch { return new Set(); }
+const VOTED_KEY = "larb-style-voted"; // "<shopId>:north" / "<shopId>:isan"
+const readSet = (key) => {
+  try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch { return new Set(); }
 };
-const saveLiked = (s) => {
-  try { localStorage.setItem(LIKED_KEY, JSON.stringify([...s])); } catch { /* private mode */ }
+const saveSet = (key, s) => {
+  try { localStorage.setItem(key, JSON.stringify([...s])); } catch { /* private mode */ }
 };
+const readLiked = () => readSet(LIKED_KEY);
+const saveLiked = (s) => saveSet(LIKED_KEY, s);
 
-let state = { shops: [], loaded: false, error: null, liked: readLiked() };
+let state = { shops: [], loaded: false, error: null, liked: readLiked(), voted: readSet(VOTED_KEY) };
 const subs = new Set();
 const set = (patch) => { state = { ...state, ...patch }; subs.forEach((f) => f()); };
 const subscribe = (f) => (subs.add(f), () => subs.delete(f));
@@ -46,11 +49,20 @@ export function loadUserShops() {
 }
 
 export async function addUserShop(shop) {
-  const [row] = await api("/rest/v1/user_shops", {
+  const post = (body) => api("/rest/v1/user_shops", {
     method: "POST",
     headers: { Prefer: "return=representation" },
-    body: JSON.stringify(shop),
+    body: JSON.stringify(body),
   });
+  let row;
+  try {
+    [row] = await post(shop);
+  } catch (e) {
+    // ฐานข้อมูลยังไม่มีคอลัมน์โหวตประเภท (ยังไม่ได้รัน SQL ใหม่): บันทึกร้านโดยไม่มีโหวต
+    if (!/north_votes|isan_votes/.test(String(e))) throw e;
+    const { north_votes, isan_votes, ...rest } = shop;
+    [row] = await post(rest);
+  }
   const n = norm(row);
   set({ shops: [...state.shops, n] });
   return n;
@@ -79,6 +91,36 @@ export async function toggleLike(id) {
     flip(!on);
     setLikes(id, (n) => Math.max(0, n + (on ? -1 : 1)));
     alert("กดไลก์ไม่สำเร็จ ลองใหม่อีกครั้ง");
+  }
+}
+
+// โหวตประเภทลาบ (เหนือ/อีสาน) ให้ร้านจากผู้ใช้ กดซ้ำเพื่อยกเลิก — จำไว้ในเบราว์เซอร์เหมือนไลก์
+export async function toggleStyleVote(id, k) {
+  const key = `${id}:${k}`;
+  const col = k + "_votes";
+  const on = !state.voted.has(key);
+  const flip = (add) => {
+    const v = new Set(state.voted);
+    add ? v.add(key) : v.delete(key);
+    set({ voted: v });
+    saveSet(VOTED_KEY, v);
+  };
+  const bump = (d) => set({ shops: state.shops.map((s) => (s.id === id ? { ...s, [col]: Math.max(0, (s[col] || 0) + d) } : s)) });
+  flip(on);
+  bump(on ? 1 : -1);
+  try {
+    const rows = await api("/rest/v1/rpc/vote_style", {
+      method: "POST",
+      body: JSON.stringify({ shop_id: id, style: k, delta: on ? 1 : -1 }),
+    });
+    const r = Array.isArray(rows) ? rows[0] : rows;
+    if (r && typeof r.north_votes === "number") {
+      set({ shops: state.shops.map((s) => (s.id === id ? { ...s, north_votes: r.north_votes, isan_votes: r.isan_votes } : s)) });
+    }
+  } catch {
+    flip(!on);
+    bump(on ? -1 : 1);
+    alert("โหวตไม่สำเร็จ ลองใหม่อีกครั้ง");
   }
 }
 

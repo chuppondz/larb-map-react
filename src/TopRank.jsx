@@ -5,7 +5,8 @@ import Footer from "./Footer.jsx";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
 import { ENABLED, useUserShops, loadUserShops, byLikes } from "./userShops.js";
-import { matchCity } from "./utils.js";
+import { matchCity, hasStyle } from "./utils.js";
+import { StyleTags, StyleChips, StyleVote } from "./Style.jsx";
 
 const enc = encodeURIComponent;
 const MEDAL = ["🥇", "🥈", "🥉"];
@@ -19,8 +20,10 @@ function Item({ r, i, showCity }) { // i = อันดับจริง (ไ�
       <div className="tr-no">{MEDAL[i] || i + 1}</div>
       <div className="tr-bd">
         <h3>{r.name}</h3>
+        <StyleTags r={r} />
         {showCity && <a className="tr-city" href={`#/toprank/${enc(r.city)}`}>📍 {r.city}</a>}
         {r.note && <p>💬 {r.note}</p>}
+        <StyleVote id={r.id} />
         <div className="tr-links">
           <a target="_blank" rel="noopener noreferrer"
              href={`https://www.google.com/maps/dir/?api=1&destination=${r.la},${r.lo}`}>🧭 นำทาง</a>
@@ -37,6 +40,7 @@ export default function TopRank({ city }) {
   const { shops, loaded, error } = useUserShops();
   const [adding, setAdding] = useState(false);
   const [q, setQ] = useState("");
+  const [styleF, setStyleF] = useState("");
   useEffect(() => { loadUserShops(); }, []);
 
   // จังหวัดที่มีร้านแนะนำ เรียงตามจำนวนร้าน
@@ -47,7 +51,7 @@ export default function TopRank({ city }) {
   }, [shops]);
 
   const sel = city || "";
-  const ranked = useMemo(() => shops.filter((s) => !sel || s.city === sel).sort(byLikes), [shops, sel]);
+  const ranked = useMemo(() => shops.filter((s) => (!sel || s.city === sel) && hasStyle(s, styleF)).sort(byLikes), [shops, sel, styleF]);
   // ค้นหาจากชื่อร้าน จังหวัด หรือคำแนะนำ (เก็บอันดับเดิมไว้)
   const list = useMemo(() => {
     const n = norm(q);
@@ -99,6 +103,8 @@ export default function TopRank({ city }) {
                   {sel && !cities.some(([c]) => c === sel) && <span className="chip on">{sel} (0)</span>}
                 </div>
               )}
+
+              <StyleChips value={styleF} onChange={setStyleF} />
 
               <h2 style={{ marginTop: 18 }}>{sel ? `อันดับร้านลาบ จ.${sel}` : "อันดับรวมทุกจังหวัด"}</h2>
               {q.trim() && <p className="note">ผลค้นหา “{q.trim()}” · พบ {list.length} ร้าน</p>}

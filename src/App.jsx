@@ -7,6 +7,8 @@ import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon, rankHref,
 import { ENABLED, useUserShops, loadUserShops } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
+import { StyleTags, StyleChips, StyleVote } from "./Style.jsx";
+import { hasStyle } from "./utils.js";
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import { FB, MAIL } from "./contact.js";
@@ -33,8 +35,10 @@ function UserSheet({ r, dist, onClose }) {
       <button className="x" onClick={onClose} aria-label="ปิด">×</button>
       <span className="ubadge">👍 แนะนำโดยผู้ใช้</span>
       <h3>{r.name}</h3>
+      <StyleTags r={r} hint />
       <div className="r"><LikeBtn id={r.id} /> <span>{r.city}{distTxt(dist)}</span></div>
       {r.note && <div className="r">💬 {r.note}</div>}
+      <StyleVote id={r.id} />
       <div className="acts">
         <a className="p" target="_blank" rel="noopener noreferrer"
            href={`https://www.google.com/maps/dir/?api=1&destination=${q}`}>นำทาง</a>
@@ -62,6 +66,7 @@ function Sheet({ r, dist, onClose }) {
     <div className="sheet open">
       <button className="x" onClick={onClose} aria-label="ปิด">×</button>
       <h3>{r.name}</h3>
+      <StyleTags r={r} hint />
       <div className="r">
         <span className="score" style={{ background: color(r.rate) }}>{r.rate.toFixed(1)}</span>
         {"★".repeat(Math.round(r.rate))} <span>({r.n.toLocaleString()} รีวิว)</span>
@@ -85,6 +90,7 @@ export default function App({ focus }) {
   const [map, setMap] = useState(null);
   const [zoom, setZoom] = useState(6);
   const [filter, setFilter] = useState(0);
+  const [styleF, setStyleF] = useState("");
   const [sel, setSel] = useState(null);
   const [dist, setDist] = useState(null);
   const [me, setMe] = useState(null);
@@ -94,8 +100,8 @@ export default function App({ focus }) {
   useEffect(() => { loadUserShops(); }, []);
 
   const userMode = filter === USER_FILTER;
-  const official = useMemo(() => (userMode ? [] : R.filter(FILTERS[filter][1])), [filter]);
-  const userList = ENABLED && (filter === 0 || userMode) ? shops : [];
+  const official = useMemo(() => (userMode ? [] : R.filter((r) => FILTERS[filter][1](r) && hasStyle(r, styleF))), [filter, styleF]);
+  const userList = ENABLED && (filter === 0 || userMode) ? shops.filter((r) => hasStyle(r, styleF)) : [];
   const list = useMemo(() => [...official, ...userList], [official, userList]);
   const groups = useMemo(() => groupByCity(list), [list]);
   const allGroups = useMemo(() => groupByCity(R), []);
@@ -220,6 +226,7 @@ export default function App({ focus }) {
                     );
                   })}
             </MapContainer>
+            <StyleChips className="tools2" value={styleF} onChange={(k) => { setStyleF(k); close(); }} />
             <div className="tools">
               {FILTERS.map(([t], i) => (
                 <button key={t} className={"chip" + (i === filter ? " on" : "")}

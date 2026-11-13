@@ -39,3 +39,29 @@ $$;
 
 revoke all on function public.like_shop(uuid, integer) from public;
 grant execute on function public.like_shop(uuid, integer) to anon, authenticated;
+
+-- ===== ประเภทลาบ: โหวต ลาบเหนือ / ลาบอีสาน (รันส่วนนี้เพิ่มได้ แม้เคยรันไฟล์นี้ไปแล้ว) =====
+alter table public.user_shops add column if not exists north_votes integer not null default 0 check (north_votes >= 0);
+alter table public.user_shops add column if not exists isan_votes integer not null default 0 check (isan_votes >= 0);
+
+-- ตอนปักหมุด: ยอดไลก์เริ่มที่ 0 และโหวตประเภทได้ไม่เกิน 1 ต่อแบบ (ผู้ปักเลือก)
+drop policy if exists "user_shops insert" on public.user_shops;
+create policy "user_shops insert" on public.user_shops for insert to anon, authenticated
+  with check (likes = 0 and north_votes <= 1 and isan_votes <= 1);
+
+-- โหวต (+1) / ยกเลิกโหวต (-1) ประเภทลาบ
+create or replace function public.vote_style(shop_id uuid, style text, delta integer default 1)
+returns table (north_votes integer, isan_votes integer)
+language sql
+security definer
+set search_path = public
+as $$
+  update user_shops u
+     set north_votes = case when style = 'north' then greatest(0, u.north_votes + case when delta >= 0 then 1 else -1 end) else u.north_votes end,
+         isan_votes  = case when style = 'isan'  then greatest(0, u.isan_votes  + case when delta >= 0 then 1 else -1 end) else u.isan_votes  end
+   where u.id = shop_id and style in ('north', 'isan')
+  returning u.north_votes, u.isan_votes;
+$$;
+
+revoke all on function public.vote_style(uuid, text, integer) from public;
+grant execute on function public.vote_style(uuid, text, integer) to anon, authenticated;

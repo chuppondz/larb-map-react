@@ -137,3 +137,21 @@ details p a{color:var(--acc)}
 .tr-item .like{flex:none;margin-top:4px}
 .tr-empty{background:var(--card);border:1px dashed #f0b9a2;border-radius:18px;padding:22px;text-align:center;margin-top:10px}
 .tr-empty p{margin:0 0 12px}
+/* ประเภทลาบ (เดโม) */
+.stags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:2px 0 4px}
+.stag{display:inline-block;border-radius:10px;padding:0 8px;font-size:12px;font-weight:600;line-height:20px}
+.stag.north{background:#e3efe0;color:#2f6b2a}
+.stag.isan{background:#fcefd2;color:#8a5a00}
+.sguess{font-size:11px;color:var(--mut)}
+.schips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+.chip.s.on{background:var(--tx);border-color:var(--tx);color:#fff}
+.chip.s.north.on{background:#2f6b2a;border-color:#2f6b2a}
+.chip.s.isan.on{background:#a86d00;border-color:#a86d00}
+.tools2{position:absolute;z-index:1000;top:48px;left:10px;right:10px;margin:0;flex-wrap:nowrap;overflow-x:auto;pointer-events:none}
+.tools2 .chip{pointer-events:auto;box-shadow:0 1px 4px #0002}
+.mlabel{font-size:13px;font-weight:600;margin-top:10px}
+.svote{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 2px;font-size:13px;color:var(--mut)}
+.vbtn{border:1.5px solid var(--bd);background:#fff;border-radius:16px;padding:1px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--tx)}
+.vbtn b{font-weight:700;margin-left:2px}
+.vbtn.north.on{border-color:#2f6b2a;background:#e3efe0;color:#2f6b2a}
+.vbtn.isan.on{border-color:#a86d00;background:#fcefd2;color:#8a5a00}
