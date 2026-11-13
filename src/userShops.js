@@ -119,7 +119,8 @@ export const votesOf = (r) => {
 // ลำดับ: กำหนดเองใน data.js > โหวตฝั่งที่มากกว่า
 export const stylesOf = (r) => (r.styles?.length ? r.styles : majority(votesOf(r)));
 export const hasStyle = (r, k) => !k || stylesOf(r).includes(k);
-export const canVote = (r) => ENABLED && !r.styles?.length && votesOf(r) !== null;
+// ปุ่มโหวตแสดงทุกร้านเสมอ (ยกเว้นร้านที่เจ้าของเว็บยืนยันประเภทไว้ใน data.js)
+export const canVote = (r) => ENABLED && !r.styles?.length;
 const voteKey = (r) => (r.user ? r.id : "o:" + officialKey(r));
 export const myVote = (r) => ["north", "isan"].find((k) => state.voted.has(`${voteKey(r)}:${k}`)) || null;
 
@@ -144,6 +145,10 @@ const bump = (add, remove, sign) => (v) => {
 
 // กดโหวต: โหวตได้ฝั่งเดียวต่อร้าน · กดฝั่งเดิม = ยกเลิก · กดอีกฝั่ง = ย้ายโหวต (ทำในคำสั่งเดียว)
 export async function toggleStyleVote(r, k) {
+  if (votesOf(r) === null) {
+    alert("ระบบโหวตประเภทลาบยังไม่พร้อม ลองใหม่อีกครั้งภายหลัง");
+    return;
+  }
   const key = voteKey(r);
   const cur = myVote(r);
   const add = cur === k ? null : k;

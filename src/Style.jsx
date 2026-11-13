@@ -29,7 +29,7 @@ export function StyleChips({ value, onChange, counts, className = "" }) {
 export function StyleVote({ r }) {
   useUserShops();
   if (!canVote(r)) return null;
-  const v = votesOf(r);
+  const v = votesOf(r) || { north: 0, isan: 0 };
   const mine = myVote(r);
   return (
     <div className="svote">

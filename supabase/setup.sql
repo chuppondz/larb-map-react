@@ -104,3 +104,6 @@ as $$
 $$;
 revoke all on function public.vote_official(text, text, text) from public;
 grant execute on function public.vote_official(text, text, text) to anon, authenticated;
+
+-- ให้ API ของ Supabase เห็นตาราง/ฟังก์ชันใหม่ทันที
+notify pgrst, 'reload schema';

@@ -73,8 +73,8 @@ function Sheet({ r, dist, onClose }) {
       </div>
       <div className="r">📍 {r.area} <span>· {r.city}{distTxt(dist)}</span></div>
       <div className="r">🕒 {r.hrs}</div>
-      <StyleVote r={r} />
       {r.tel && <div className="r">📞 <a href={`tel:${tel}`}>{r.tel}</a></div>}
+      <StyleVote r={r} />
       <div className="acts">
         {r.tel && <a href={`tel:${tel}`}>โทร</a>}
         <a className="p" target="_blank" rel="noopener noreferrer"
