@@ -155,7 +155,7 @@ export default function App({ focus }) {
           <div className="cta">
             <a className="btn" href="#map-section">ดูแผนที่เลย</a>
             <button className="btn o" onClick={near}>📍 ร้านใกล้ฉัน</button>
-            {ENABLED && <a className="btn u" href="#/toprank">👍 Toprank จากชาวลาบ</a>}
+            {ENABLED && <a className="btn u" href="#/toprank">🔥 Top Rank จากชาวลาบ</a>}
           </div>
           <form className="search" role="search"
                 onSubmit={(e) => { e.preventDefault(); location.hash = rankHref(q, cities); }}>
