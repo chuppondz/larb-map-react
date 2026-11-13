@@ -166,17 +166,18 @@ export default function App({ focus }) {
           <span className="pill">🌶️ ใช้ฟรี · ไม่ต้องสมัคร · ไม่ต้องโหลดแอป</span>
           <h1>หิว<em>ลาบ!!!</em> หาร้าน<em>ลาบ</em><br />ได้ใน 5 วินาที</h1>
           <p>แผนที่ร้านลาบทั่วไทย บอกได้ว่าร้านไหนคะแนนดี เปิดกี่โมง โทรได้ไหม และนำทางไปถึงหน้าร้านได้ทันที</p>
-          <div className="cta">
-            <a className="btn" href="#map-section">ดูแผนที่เลย</a>
-            <button className="btn o" onClick={near}>📍 ร้านใกล้ฉัน</button>
-            {ENABLED && <a className="btn u" href="#/toprank">🔥 Top Rank จากชาวลาบ</a>}
+          {/* ปุ่มหน้าแรก: สีตามวัตถุดิบลาบ พริก / สะระแหน่ / ข้าวคั่ว / หอมแดง */}
+          <div className="cta hero-cta">
+            <a className="btn b-chili" href="#map-section">🗺️ ดูแผนที่เลย</a>
+            <button className="btn b-mint" onClick={near}>📍 ร้านใกล้ฉัน</button>
+            {ENABLED && <a className="btn b-rice wide" href="#/toprank">🔥 Top Rank จากชาวลาบ</a>}
           </div>
-          <form className="search" role="search"
+          <form className="hero-search" role="search"
                 onSubmit={(e) => { e.preventDefault(); location.hash = rankHref(q, cities); }}>
             <input type="search" list="city-list" value={q} onChange={(e) => setQ(e.target.value)}
-                   placeholder="🏆 ค้นหาจังหวัด ดู Top 10 ร้านลาบ" aria-label="ค้นหาจังหวัด" />
+                   placeholder="🔍 พิมพ์ชื่อจังหวัด" aria-label="ค้นหาจังหวัด ดู Top 10 ร้านลาบ" />
             <datalist id="city-list">{cities.map((c) => <option key={c} value={c} />)}</datalist>
-            <button className="btn">ดูอันดับ</button>
+            <button className="btn b-shallot">🏆 ดูอันดับ</button>
           </form>
         </div>
         {/* <div className="phone">
