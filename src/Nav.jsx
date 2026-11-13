@@ -10,7 +10,7 @@ export default function Nav() {
           <a className="h" href="#provinces">จังหวัด</a>
           <a className="h" href="#faq">คำถามที่พบบ่อย</a>
           <a className="nl" href="#/ranking">🏆 Top 10</a>
-          {ENABLED && <a className="nl" href="#/toprank">🔥 Top Rank</a>}
+          {ENABLED && <a className="nl" href="#/toprank">🔥 Top Vote</a>}
           <a className="btn" href="#map-section">เปิดแผนที่</a>
         </div>
       </div>

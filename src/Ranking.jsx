@@ -153,7 +153,7 @@ export default function Ranking({ city, q: q0 = "" }) {
                     <button className="btn" onClick={() => setAdding(true)}>➕ แนะนำร้าน</button>
                   </div>
                   <p className="note">เรียงตามยอดไลก์ · กด 🤍 ให้ร้านที่ชอบเพื่อดันขึ้นอันดับ ·{" "}
-                    <a href="#/toprank" style={{ color: "var(--u)", fontWeight: 600 }}>ดู 🔥 Top Rank จากชาวลาบทุกจังหวัด →</a></p>
+                    <a href="#/toprank" style={{ color: "var(--u)", fontWeight: 600 }}>ดู 🔥 Top Vote จากชาวลาบทุกจังหวัด →</a></p>
                   {!loaded ? <p className="note">กำลังโหลด…</p>
                     : error ? <p className="note">โหลดร้านแนะนำไม่สำเร็จ ลองรีเฟรชอีกครั้ง</p>
                     : userTop.length ? (

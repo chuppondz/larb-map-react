@@ -60,14 +60,14 @@ export default function TopRank({ city }) {
   }, [ranked, q]);
 
   useEffect(() => {
-    document.title = (sel ? `🔥 Top Rank ร้านลาบ ${sel}` : "🔥 Top Rank จากชาวลาบ") + " — ลาบแมป";
+    document.title = (sel ? `🔥 Top Vote ร้านลาบ ${sel}` : "🔥 Top Vote จากชาวลาบ") + " — ลาบแมป";
   }, [sel]);
 
   return (
     <>
       <Nav />
       <header className="wrap rank-hero">
-        <h1>🔥 Top Rank <em>จากชาวลาบ</em></h1>
+        <h1>🔥 Top Vote <em>จากชาวลาบ</em></h1>
         <p className="note" style={{ fontSize: 15 }}>
           ร้านลาบที่ชาวลาบแนะนำกันเอง เรียงตามยอดไลก์ · กด 🤍 ให้ร้านที่ชอบเพื่อดันขึ้นอันดับ
         </p>
