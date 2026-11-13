@@ -1,9 +1,18 @@
-// Cloudflare Workers (static assets): deploy โฟลเดอร์ dist ที่ได้จาก `npm run build`
+// Cloudflare Workers: deploy โฟลเดอร์ dist ที่ได้จาก `npm run build` ผ่าน worker.js
 // "name" ต้องตรงกับชื่อ Worker ใน Cloudflare dashboard
 {
   "name": "larb-map-react",
+  "main": "worker.js",
   "compatibility_date": "2026-11-01",
   "assets": {
-    "directory": "./dist"
-  }
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // ให้ worker.js ได้ตรวจทุกคำขอก่อน (เพื่อพา http:// และ www. ไป https://larbmap.com)
+    "run_worker_first": true
+  },
+  // ผูกโดเมน: Cloudflare สร้าง DNS + ใบรับรอง HTTPS ของ www ให้เองตอน deploy
+  "routes": [
+    { "pattern": "larbmap.com", "custom_domain": true },
+    { "pattern": "www.larbmap.com", "custom_domain": true }
+  ]
 }
