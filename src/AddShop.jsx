@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { R } from "./data.js";
-import { km, parseMapsLink, inThailand, cleanPlaceName, userPinIcon, STYLES, STYLE_KEYS } from "./utils.js";
+import { km, parseMapsLink, inThailand, cleanPlaceName, placeIdFromUrl, sameName, userPinIcon, STYLES, STYLE_KEYS } from "./utils.js";
 import { useUserShops, addUserShop, resolveShortLink } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 
@@ -37,8 +37,18 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
   const abroad = okPos && (forceAbroad || !inThailand(pos[0], pos[1]));
 
   // ร้านซ้ำ: อยู่ห่างไม่เกิน 50 ม.
-  const dupUser = useMemo(() => okPos && shops.find((s) => km(pos[0], pos[1], s.la, s.lo) < 0.05), [okPos, coords, shops]);
-  const dupOfficial = useMemo(() => okPos && R.find((r) => km(pos[0], pos[1], r.la, r.lo) < 0.05), [okPos, coords]);
+  // ร้านซ้ำ = รหัสร้าน Google ตรงกัน หรือ อยู่ใกล้กัน (<50 ม.) และชื่อเหมือนกัน
+  // ร้านที่อยู่ติดกันแต่ชื่อต่างกัน = คนละร้าน ปักได้ (แค่เตือนให้รู้)
+  const pid = placeIdFromUrl(mapsUrl);
+  const { dupUser, dupOfficial, neighbor } = useMemo(() => {
+    if (!okPos) return {};
+    const near = (r) => km(pos[0], pos[1], r.la, r.lo) < 0.05;
+    const n = name.trim();
+    const dupUser = shops.find((s) => (pid && placeIdFromUrl(s.maps_url) === pid) || (near(s) && sameName(s.name, n)));
+    const dupOfficial = R.find((r) => (pid && r.pid === pid) || (near(r) && sameName(r.name, n)));
+    const neighbor = !dupUser && !dupOfficial && ([...shops, ...R].find(near) || null);
+    return { dupUser, dupOfficial, neighbor };
+  }, [okPos, coords, shops, pid, name]);
 
   const apply = (p) => {
     if (p.name && !name) {
@@ -61,6 +71,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
       try {
         const full = await resolveShortLink(p.url);
         const q = parseMapsLink(full);
+        if (q?.url) setMapsUrl(q.url); // เก็บลิงก์เต็ม (มีรหัสร้าน ใช้เช็กร้านซ้ำได้)
         if (q) apply(q);
         if (!q || q.lat == null) { setManual(true); setMsg("อ่านพิกัดจากลิงก์ไม่ได้ กรุณาใส่พิกัดเอง (กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลข)"); }
       } catch {
@@ -183,6 +194,9 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
           <div className="dup">มีคนแนะนำร้านนี้แล้ว: <b>{dupUser.name}</b> <LikeBtn id={dupUser.id} /></div>
         )}
         {dupOfficial && !dupUser && <div className="dup">ร้านนี้มีบนแผนที่แล้ว: <b>{dupOfficial.name}</b></div>}
+        {neighbor && (
+          <p className="note" style={{ marginTop: 10 }}>📍 ใกล้กับร้าน “{neighbor.name}” — ถ้าเป็นคนละร้าน ปักได้เลย</p>
+        )}
         {msg && <div className="err" role="alert">{msg}</div>}
 
         <button className="btn" disabled={busy} style={{ width: "100%", marginTop: 12 }}>

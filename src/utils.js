@@ -83,9 +83,28 @@ export const userPinIcon = (likes, on) =>
 // ชื่อสถานที่จากลิงก์ Google บางทีมีที่อยู่ต่อท้าย: "ร้าน 泰兄弟, No. 1號, Siyuan St, ..." -> "ร้าน 泰兄弟"
 export const cleanPlaceName = (s) => (s || "").split(/[,，]/)[0].trim().slice(0, 80);
 
+const safeDecode = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
+// รหัสร้านของ Google จากลิงก์ (…!1s0x<a>:0x<b>…) แปลงเป็น placeId แบบ "ChIJ…" ใช้เช็กว่าเป็นร้านเดียวกันไหม
+export const placeIdFromUrl = (url) => {
+  const m = safeDecode(url || "").match(/!1s(0x[0-9a-f]+):(0x[0-9a-f]+)/i);
+  if (!m) return null;
+  const b = new Uint8Array(20); // 0a 12 09 + 8 ไบต์ + 11 + 8 ไบต์
+  const dv = new DataView(b.buffer);
+  b.set([0x0a, 0x12, 0x09]);
+  dv.setBigUint64(3, BigInt(m[1]), true);
+  b[11] = 0x11;
+  dv.setBigUint64(12, BigInt(m[2]), true);
+  return btoa(String.fromCharCode(...b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+// ชื่อร้านใกล้เคียงกันไหม (ไม่สนช่องว่าง/ตัวพิมพ์/เครื่องหมาย และนับกรณีชื่อหนึ่งอยู่ในอีกชื่อ)
+const normName = (s) => (s || "").toLowerCase().replace(/[\s.,，()\[\]『』「」'"!-]/g, "");
+export const sameName = (a, b) => {
+  const x = normName(a), y = normName(b);
+  return x.length >= 2 && y.length >= 2 && (x.includes(y) || y.includes(x));
+};
+
 export const inThailand = (lat, lng) => lat > 5 && lat < 21 && lng > 97 && lng < 106;
 
-const safeDecode = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
 
 // อ่านชื่อร้านและพิกัดจากลิงก์ Google Maps หรือข้อความพิกัด "13.75, 100.5"
 // คืน { short: true } ถ้าเป็นลิงก์สั้น (maps.app.goo.gl) ที่ต้องให้เซิร์ฟเวอร์แปลงก่อน
