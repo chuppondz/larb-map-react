@@ -31,7 +31,10 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
   const [manual, setManual] = useState(false); // แสดงช่องพิกัดเฉพาะตอนลิงก์ไม่มีพิกัด หรือผู้ใช้อยากแก้เอง
 
   const pos = parseCoords(coords);
-  const okPos = pos && inThailand(pos[0], pos[1]);
+  // ปักได้ทั่วโลก (ร้านลาบต่างประเทศ) · ในไทยเลือกจังหวัด · ต่างประเทศพิมพ์ชื่อเมือง/ประเทศ
+  const okPos = pos && Math.abs(pos[0]) <= 90 && Math.abs(pos[1]) <= 180 && !(pos[0] === 0 && pos[1] === 0);
+  const [forceAbroad, setForceAbroad] = useState(false); // ร้านแถบชายแดน (ลาว/กัมพูชา/มาเลเซีย) ที่พิกัดอยู่ในกรอบไทย
+  const abroad = okPos && (forceAbroad || !inThailand(pos[0], pos[1]));
 
   // ร้านซ้ำ: อยู่ห่างไม่เกิน 50 ม.
   const dupUser = useMemo(() => okPos && shops.find((s) => km(pos[0], pos[1], s.la, s.lo) < 0.05), [okPos, coords, shops]);
@@ -43,7 +46,8 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
     }
     if (p.lat != null) {
       setCoords(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
-      setCity(nearestCity(p.lat, p.lng)); // จังหวัดตามตำแหน่งจริงของร้าน แม้จะเปิดฟอร์มจากหน้าจังหวัดอื่น
+      // จังหวัดตามตำแหน่งจริงของร้าน (แม้จะเปิดฟอร์มจากหน้าจังหวัดอื่น) · ต่างประเทศให้ผู้ใช้พิมพ์เมืองเอง
+      setCity(inThailand(p.lat, p.lng) ? nearestCity(p.lat, p.lng) : "");
     }
   };
 
@@ -77,15 +81,17 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
       if (link.trim() && !coords && !manual) return readLink(link); // กดปักหมุดทันทีหลังวางลิงก์
       if (!link.trim() && !coords) return setMsg("กรุณาวางลิงก์ Google Maps ของร้าน");
       setManual(true);
-      return setMsg("พิกัดไม่ถูกต้อง หรืออยู่นอกประเทศไทย");
+      return setMsg(coords.trim()
+        ? "พิกัดไม่ถูกต้อง ใส่เป็น ละติจูด, ลองจิจูด เช่น 25.033964, 121.564468"
+        : "อ่านตำแหน่งจากลิงก์ไม่ได้ กรุณาใส่พิกัด: กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลขมาวาง");
     }
-    if (!city) return setMsg("กรุณาเลือกจังหวัด");
+    if (city.trim().length < 2) return setMsg(abroad ? "กรุณาใส่ชื่อเมือง/ประเทศ เช่น ไทเป ไต้หวัน" : "กรุณาเลือกจังหวัด");
     if (dupUser || dupOfficial) return setMsg("ร้านนี้มีอยู่บนแผนที่แล้ว");
     setBusy(true);
     setMsg("");
     try {
       const s = await addUserShop({
-        name: n, city, lat: +pos[0].toFixed(6), lng: +pos[1].toFixed(6),
+        name: n, city: city.trim(), lat: +pos[0].toFixed(6), lng: +pos[1].toFixed(6),
         maps_url: mapsUrl || null, note: note.trim() || null,
         // ประเภทที่ผู้ปักเลือก = โหวตแรกของร้าน
         ...(style ? { [style + "_votes"]: 1 } : {}),
@@ -126,12 +132,22 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
               <input value={coords} onChange={(e) => setCoords(e.target.value)} placeholder="13.756331, 100.501765" inputMode="decimal" />
             </label>
           )}
-          <label>จังหวัด *
-            <select value={city} onChange={(e) => setCity(e.target.value)}>
-              <option value="">เลือก</option>
-              {CITIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </label>
+          {abroad ? (
+            <label>เมือง / ประเทศ *
+              <input value={city} maxLength={40} onChange={(e) => setCity(e.target.value)} placeholder="เช่น ไทเป ไต้หวัน" />
+            </label>
+          ) : (
+            <label>จังหวัด *
+              <select value={city} onChange={(e) => setCity(e.target.value)}>
+                <option value="">เลือก</option>
+                {CITIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+              {okPos && (
+                <button type="button" className="linkbtn" style={{ fontSize: 12, fontWeight: 400 }}
+                        onClick={() => { setForceAbroad(true); setCity(""); }}>ร้านอยู่ต่างประเทศ?</button>
+              )}
+            </label>
+          )}
         </div>
 
         {okPos && !manual && (

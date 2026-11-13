@@ -207,8 +207,8 @@ export default function App({ focus }) {
             {ENABLED && <span><i style={{ background: "var(--u)" }} />👍 แนะนำโดยผู้ใช้</span>}
           </div>
           <div className="mapbox">
-            <MapContainer ref={setMap} className="map" center={[15.3, 101]} zoom={6} minZoom={5}
-                          zoomControl={false} maxBounds={[[3, 93], [23, 108]]}>
+            <MapContainer ref={setMap} className="map" center={[15.3, 101]} zoom={6} minZoom={3}
+                          zoomControl={false} maxBounds={[[-85, -200], [85, 200]]}>
                <TileLayer
         attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -289,6 +289,8 @@ export default function App({ focus }) {
               ["กดไลก์ได้กี่ครั้ง",
                 "กดได้ร้านละ 1 ครั้งต่อเบราว์เซอร์ กดซ้ำเพื่อยกเลิกได้ ร้านที่ได้ไลก์มากจะขึ้นอันดับต้นของร้านแนะนำในจังหวัดนั้น"],
             ] : []),
+            ...(ENABLED ? [["ปักร้านลาบต่างประเทศได้ไหม",
+              "ได้เลย วางลิงก์ Google Maps ของร้านได้ทุกประเทศ แล้วพิมพ์ชื่อเมือง/ประเทศ เช่น “ไทเป ไต้หวัน” ร้านจะขึ้นบนแผนที่และในหน้า 🔥 Top Rank ให้คนไทยในต่างแดนหาลาบกินได้ง่ายขึ้น"]] : []),
             ["“ร้านใกล้ฉัน” เอาตำแหน่งไปเก็บไหม",
               "ไม่เก็บ เบราว์เซอร์จะขออนุญาตก่อน แล้วใช้ตำแหน่งคำนวณหาร้านใกล้สุดบนเครื่องของคุณเท่านั้น ไม่ได้ส่งไปที่ไหน"],
             ["เวลาเปิด-ปิดตรงเสมอไหม",

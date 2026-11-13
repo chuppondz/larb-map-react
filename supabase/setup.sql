@@ -5,8 +5,8 @@ create table if not exists public.user_shops (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(btrim(name)) between 2 and 80),
   city text not null check (char_length(city) between 2 and 40),
-  lat double precision not null check (lat between 5 and 21),
-  lng double precision not null check (lng between 97 and 106),
+  lat double precision not null check (lat between -90 and 90),
+  lng double precision not null check (lng between -180 and 180),
   maps_url text check (
     maps_url is null or (char_length(maps_url) <= 2000
       and maps_url ~ '^https://([a-z0-9-]+\.)*(google\.[a-z.]+|goo\.gl)/')
@@ -104,6 +104,12 @@ as $$
 $$;
 revoke all on function public.vote_official(text, text, text) from public;
 grant execute on function public.vote_official(text, text, text) to anon, authenticated;
+
+-- ===== เปิดให้ปักร้านลาบต่างประเทศ (เดิมจำกัดพิกัดไว้แค่ในไทย) =====
+alter table public.user_shops drop constraint if exists user_shops_lat_check;
+alter table public.user_shops drop constraint if exists user_shops_lng_check;
+alter table public.user_shops add constraint user_shops_lat_check check (lat between -90 and 90);
+alter table public.user_shops add constraint user_shops_lng_check check (lng between -180 and 180);
 
 -- ให้ API ของ Supabase เห็นตาราง/ฟังก์ชันใหม่ทันที
 notify pgrst, 'reload schema';
