@@ -21,7 +21,7 @@ h1 em{color:var(--acc);font-style:normal}
 .dot{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);flex:none}
 h2{font-size:clamp(24px,4vw,34px);margin:0 0 8px;font-weight:800}
 section{padding:46px 0}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
 .step{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:18px}
 .step b{font-size:13px;color:var(--acc)}.step h3{margin:4px 0;font-size:18px}.step p{margin:0;color:var(--mut);font-size:14px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;margin:14px 0}
