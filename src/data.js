@@ -506,6 +506,6 @@ const D=[
   ["พัทยา", "ร้านลาบอุบลพัทยาใต้", 12.9253, 100.8888, 4.1, 97, "เปิด 24 ชั่วโมง (บางวัน)", "+66 62 398 1215", "ChIJqwDAWwqWAjERkmTNdi8ylUM", "ถ.พัทยาใต้"]
 ];
 
-// ช่องที่ 11 (ไม่บังคับ) = ประเภทลาบที่กำหนดเอง เช่น "north", "isan" หรือ "north,isan" — ถ้าไม่ใส่จะเดาจากชื่อร้าน
+// ช่องที่ 11 (ไม่บังคับ) = ประเภทลาบที่ยืนยันแล้ว เช่น "north" หรือ "isan" — ถ้าไม่ใส่ ใช้ผลโหวตของผู้ใช้
 export const R = D.map(([city, name, la, lo, rate, n, hrs, tel, pid, area, st], id) =>
   ({ id, city, name, la, lo, rate, n, hrs, tel, pid, area, styles: st ? st.split(",") : [] }));

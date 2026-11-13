@@ -1,14 +1,14 @@
-import { STYLES, STYLE_KEYS, stylesOf } from "./utils.js";
-import { useUserShops, toggleStyleVote } from "./userShops.js";
+import { STYLES, STYLE_KEYS } from "./utils.js";
+import { useUserShops, stylesOf, votesOf, canVote, myVote, toggleStyleVote } from "./userShops.js";
 
-// ป้ายประเภทลาบ เช่น 🏔️ ลาบเหนือ · 🌾 ลาบอีสาน
-export function StyleTags({ r, hint }) {
-  const { styles, guessed } = stylesOf(r);
+// ป้ายประเภทลาบ (ขึ้นเฉพาะฝั่งที่โหวตชนะ)
+export function StyleTags({ r }) {
+  useUserShops(); // อัปเดตเมื่อโหวตเปลี่ยน
+  const styles = stylesOf(r);
   if (!styles.length) return null;
   return (
     <span className="stags">
       {styles.map((k) => <span key={k} className={"stag " + k}>{STYLES[k].emoji} {STYLES[k].label}</span>)}
-      {hint && guessed && <span className="sguess">เดาจากชื่อร้าน</span>}
     </span>
   );
 }
@@ -25,23 +25,21 @@ export function StyleChips({ value, onChange, counts, className = "" }) {
   );
 }
 
-// ปุ่มโหวตประเภทให้ร้านจากผู้ใช้ (เหมือนปุ่มไลก์) — ซ่อนถ้าฐานข้อมูลยังไม่มีคอลัมน์โหวต
-export function StyleVote({ id }) {
-  const { shops, voted } = useUserShops();
-  const s = shops.find((x) => x.id === id);
-  if (!s || s.north_votes === undefined) return null;
+// ปุ่มโหวตประเภท (ใช้ได้ทั้งร้านจาก Google และร้านที่ผู้ใช้ปัก)
+export function StyleVote({ r }) {
+  useUserShops();
+  if (!canVote(r)) return null;
+  const v = votesOf(r);
+  const mine = myVote(r);
   return (
     <div className="svote">
       <span>ร้านนี้เป็นลาบแบบไหน?</span>
-      {STYLE_KEYS.map((k) => {
-        const on = voted.has(`${id}:${k}`);
-        return (
-          <button key={k} type="button" className={"vbtn " + k + (on ? " on" : "")} aria-pressed={on}
-                  onClick={() => toggleStyleVote(id, k)}>
-            {STYLES[k].emoji} {STYLES[k].label.replace("ลาบ", "")} <b>{s[k + "_votes"] || 0}</b>
-          </button>
-        );
-      })}
+      {STYLE_KEYS.map((k) => (
+        <button key={k} type="button" className={"vbtn " + k + (mine === k ? " on" : "")} aria-pressed={mine === k}
+                onClick={() => toggleStyleVote(r, k)}>
+          {STYLES[k].emoji} {STYLES[k].label.replace("ลาบ", "")} <b>{v[k]}</b>
+        </button>
+      ))}
     </div>
   );
 }

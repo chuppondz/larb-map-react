@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { R } from "./data.js";
-import { km, parseMapsLink, inThailand, userPinIcon, STYLES, STYLE_KEYS, guessStyles } from "./utils.js";
+import { km, parseMapsLink, inThailand, userPinIcon, STYLES, STYLE_KEYS } from "./utils.js";
 import { useUserShops, addUserShop, resolveShortLink } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 
@@ -22,8 +22,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
   const [link, setLink] = useState("");
   const [mapsUrl, setMapsUrl] = useState("");
   const [name, setName] = useState("");
-  const [styles, setStyles] = useState([]); // ["north"] / ["isan"] / ทั้งสอง
-  const [stylesTouched, setStylesTouched] = useState(false);
+  const [style, setStyle] = useState(""); // "north" / "isan" / "" = ไม่แน่ใจ
   const [coords, setCoords] = useState("");
   const [city, setCity] = useState(city0);
   const [note, setNote] = useState("");
@@ -41,7 +40,6 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
   const apply = (p) => {
     if (p.name && !name) {
       setName(p.name.slice(0, 80));
-      if (!stylesTouched) setStyles(guessStyles(p.name)); // เดาประเภทจากชื่อร้านให้ก่อน
     }
     if (p.lat != null) {
       setCoords(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
@@ -90,7 +88,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
         name: n, city, lat: +pos[0].toFixed(6), lng: +pos[1].toFixed(6),
         maps_url: mapsUrl || null, note: note.trim() || null,
         // ประเภทที่ผู้ปักเลือก = โหวตแรกของร้าน
-        ...(styles.length ? { north_votes: +styles.includes("north"), isan_votes: +styles.includes("isan") } : {}),
+        ...(style ? { [style + "_votes"]: 1 } : {}),
       });
       onAdded?.(s);
     } catch {
@@ -151,12 +149,11 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
           </div>
         )}
 
-        <div className="mlabel">ประเภทลาบ (เลือกได้ทั้งสองแบบ)</div>
+        <div className="mlabel">ร้านนี้เป็นลาบแบบไหน? (ไม่แน่ใจข้ามได้)</div>
         <div className="schips">
           {STYLE_KEYS.map((k) => (
-            <button key={k} type="button" className={"chip s " + k + (styles.includes(k) ? " on" : "")}
-                    aria-pressed={styles.includes(k)}
-                    onClick={() => { setStylesTouched(true); setStyles((v) => (v.includes(k) ? v.filter((x) => x !== k) : [...v, k])); }}>
+            <button key={k} type="button" className={"chip s " + k + (style === k ? " on" : "")}
+                    aria-pressed={style === k} onClick={() => setStyle((v) => (v === k ? "" : k))}>
               {STYLES[k].emoji} {STYLES[k].label}
             </button>
           ))}

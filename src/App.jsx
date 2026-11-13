@@ -4,11 +4,11 @@ import "leaflet/dist/leaflet.css";
 import "./styles.css";
 import { R } from "./data.js";
 import { color, FILTERS, groupByCity, centroid, km, pinIcon, cityIcon, rankHref, userPinIcon } from "./utils.js";
-import { ENABLED, useUserShops, loadUserShops } from "./userShops.js";
+import { ENABLED, useUserShops, loadUserShops, hasStyle } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
 import { StyleTags, StyleChips, StyleVote } from "./Style.jsx";
-import { hasStyle } from "./utils.js";
+
 import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import { FB, MAIL } from "./contact.js";
@@ -35,10 +35,10 @@ function UserSheet({ r, dist, onClose }) {
       <button className="x" onClick={onClose} aria-label="ปิด">×</button>
       <span className="ubadge">👍 แนะนำโดยผู้ใช้</span>
       <h3>{r.name}</h3>
-      <StyleTags r={r} hint />
+      <StyleTags r={r} />
       <div className="r"><LikeBtn id={r.id} /> <span>{r.city}{distTxt(dist)}</span></div>
       {r.note && <div className="r">💬 {r.note}</div>}
-      <StyleVote id={r.id} />
+      <StyleVote r={r} />
       <div className="acts">
         <a className="p" target="_blank" rel="noopener noreferrer"
            href={`https://www.google.com/maps/dir/?api=1&destination=${q}`}>นำทาง</a>
@@ -66,13 +66,14 @@ function Sheet({ r, dist, onClose }) {
     <div className="sheet open">
       <button className="x" onClick={onClose} aria-label="ปิด">×</button>
       <h3>{r.name}</h3>
-      <StyleTags r={r} hint />
+      <StyleTags r={r} />
       <div className="r">
         <span className="score" style={{ background: color(r.rate) }}>{r.rate.toFixed(1)}</span>
         {"★".repeat(Math.round(r.rate))} <span>({r.n.toLocaleString()} รีวิว)</span>
       </div>
       <div className="r">📍 {r.area} <span>· {r.city}{distTxt(dist)}</span></div>
       <div className="r">🕒 {r.hrs}</div>
+      <StyleVote r={r} />
       {r.tel && <div className="r">📞 <a href={`tel:${tel}`}>{r.tel}</a></div>}
       <div className="acts">
         {r.tel && <a href={`tel:${tel}`}>โทร</a>}
@@ -96,11 +97,11 @@ export default function App({ focus }) {
   const [me, setMe] = useState(null);
 
   const [adding, setAdding] = useState(false);
-  const { shops } = useUserShops();
+  const { shops, ovotes } = useUserShops();
   useEffect(() => { loadUserShops(); }, []);
 
   const userMode = filter === USER_FILTER;
-  const official = useMemo(() => (userMode ? [] : R.filter((r) => FILTERS[filter][1](r) && hasStyle(r, styleF))), [filter, styleF]);
+  const official = useMemo(() => (userMode ? [] : R.filter((r) => FILTERS[filter][1](r) && hasStyle(r, styleF))), [filter, styleF, ovotes]);
   const userList = ENABLED && (filter === 0 || userMode) ? shops.filter((r) => hasStyle(r, styleF)) : [];
   const list = useMemo(() => [...official, ...userList], [official, userList]);
   const groups = useMemo(() => groupByCity(list), [list]);
@@ -280,6 +281,8 @@ export default function App({ focus }) {
               ["แนะนำร้านที่ยังไม่มีบนแผนที่ได้ไหม",
                 <>ได้เลย กด “➕ แนะนำร้าน” บนแผนที่หรือในหน้า Top 10 → เปิดร้านใน Google Maps กด “แชร์” แล้วคัดลอกลิงก์มาวาง
                   เว็บจะดึงชื่อและพิกัดให้ ตรวจตำแหน่งแล้วกด “ปักหมุดร้านนี้” ถ้าลิงก์ไม่มีพิกัด ให้กดค้างที่หมุดใน Google Maps แล้วคัดลอกตัวเลขพิกัดมาใส่เอง</>],
+              ["ป้าย 🏔️ ลาบเหนือ / 🌾 ลาบอีสาน มาจากไหน",
+                "มาจากการโหวตของชาวลาบ กด “ร้านนี้เป็นลาบแบบไหน?” ในรายละเอียดร้านได้ทุกร้าน (คนละ 1 โหวตต่อร้าน กดอีกฝั่งเพื่อเปลี่ยนใจได้) ฝั่งไหนโหวตมากกว่าจะได้ป้ายนั้น ถ้ายังไม่มีโหวตหรือเสมอกันจะยังไม่ขึ้นป้าย"],
               ["กดไลก์ได้กี่ครั้ง",
                 "กดได้ร้านละ 1 ครั้งต่อเบราว์เซอร์ กดซ้ำเพื่อยกเลิกได้ ร้านที่ได้ไลก์มากจะขึ้นอันดับต้นของร้านแนะนำในจังหวัดนั้น"],
             ] : []),

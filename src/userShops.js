@@ -2,6 +2,7 @@
 // ตั้งค่าด้วย VITE_SUPABASE_URL และ VITE_SUPABASE_ANON_KEY (ไฟล์ .env หรือ env ของโฮสติ้ง)
 // ถ้ายังไม่ได้ตั้งค่า ฟีเจอร์นี้จะถูกซ่อนไว้ทั้งหมด
 import { useSyncExternalStore } from "react";
+import { majority, officialKey } from "./utils.js";
 
 const BASE = (import.meta.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -20,7 +21,10 @@ const saveSet = (key, s) => {
 const readLiked = () => readSet(LIKED_KEY);
 const saveLiked = (s) => saveSet(LIKED_KEY, s);
 
-let state = { shops: [], loaded: false, error: null, liked: readLiked(), voted: readSet(VOTED_KEY) };
+let state = {
+  shops: [], loaded: false, error: null, liked: readLiked(), voted: readSet(VOTED_KEY),
+  ovotes: {}, ovotesReady: false, // โหวตประเภทของร้านจาก Google: { shopKey: { north, isan } }
+};
 const subs = new Set();
 const set = (patch) => { state = { ...state, ...patch }; subs.forEach((f) => f()); };
 const subscribe = (f) => (subs.add(f), () => subs.delete(f));
@@ -39,8 +43,20 @@ async function api(path, opt = {}) {
   return r.status === 204 ? null : r.json();
 }
 
+let loadingVotes = null;
+function loadOfficialVotes() {
+  if (!ENABLED || loadingVotes) return;
+  loadingVotes = api("/rest/v1/official_votes?select=shop_key,north_votes,isan_votes&limit=20000")
+    .then((rows) => set({
+      ovotesReady: true,
+      ovotes: Object.fromEntries(rows.map((r) => [r.shop_key, { north: r.north_votes, isan: r.isan_votes }])),
+    }))
+    .catch(() => { loadingVotes = null; }); // ยังไม่ได้รัน SQL: ซ่อนปุ่มโหวตของร้านจาก Google
+}
+
 let loading = null;
 export function loadUserShops() {
+  loadOfficialVotes();
   if (!ENABLED || loading) return loading;
   loading = api("/rest/v1/user_shops?select=*&order=likes.desc,created_at.asc&limit=2000")
     .then((rows) => set({ shops: rows.map(norm), loaded: true, error: null }))
@@ -94,32 +110,63 @@ export async function toggleLike(id) {
   }
 }
 
-// โหวตประเภทลาบ (เหนือ/อีสาน) ให้ร้านจากผู้ใช้ กดซ้ำเพื่อยกเลิก — จำไว้ในเบราว์เซอร์เหมือนไลก์
-export async function toggleStyleVote(id, k) {
-  const key = `${id}:${k}`;
-  const col = k + "_votes";
-  const on = !state.voted.has(key);
-  const flip = (add) => {
-    const v = new Set(state.voted);
-    add ? v.add(key) : v.delete(key);
-    set({ voted: v });
-    saveSet(VOTED_KEY, v);
+// ---------- ประเภทลาบจากโหวต ----------
+// null = ยังโหวตไม่ได้ (ฐานข้อมูลยังไม่พร้อม)
+export const votesOf = (r) => {
+  if (r.user) return r.north_votes === undefined ? null : { north: r.north_votes || 0, isan: r.isan_votes || 0 };
+  return state.ovotes[officialKey(r)] || (state.ovotesReady ? { north: 0, isan: 0 } : null);
+};
+// ลำดับ: กำหนดเองใน data.js > โหวตฝั่งที่มากกว่า
+export const stylesOf = (r) => (r.styles?.length ? r.styles : majority(votesOf(r)));
+export const hasStyle = (r, k) => !k || stylesOf(r).includes(k);
+export const canVote = (r) => ENABLED && !r.styles?.length && votesOf(r) !== null;
+const voteKey = (r) => (r.user ? r.id : "o:" + officialKey(r));
+export const myVote = (r) => ["north", "isan"].find((k) => state.voted.has(`${voteKey(r)}:${k}`)) || null;
+
+const setVotes = (r, f) => {
+  if (r.user) {
+    set({ shops: state.shops.map((s) => {
+      if (s.id !== r.id) return s;
+      const v = f({ north: s.north_votes || 0, isan: s.isan_votes || 0 });
+      return { ...s, north_votes: v.north, isan_votes: v.isan };
+    }) });
+  } else {
+    const k = officialKey(r);
+    set({ ovotes: { ...state.ovotes, [k]: f(state.ovotes[k] || { north: 0, isan: 0 }) } });
+  }
+};
+const bump = (add, remove, sign) => (v) => {
+  const n = { ...v };
+  if (add) n[add] = Math.max(0, n[add] + sign);
+  if (remove) n[remove] = Math.max(0, n[remove] - sign);
+  return n;
+};
+
+// กดโหวต: โหวตได้ฝั่งเดียวต่อร้าน · กดฝั่งเดิม = ยกเลิก · กดอีกฝั่ง = ย้ายโหวต (ทำในคำสั่งเดียว)
+export async function toggleStyleVote(r, k) {
+  const key = voteKey(r);
+  const cur = myVote(r);
+  const add = cur === k ? null : k;
+  const remove = cur;
+  const setMine = (v) => {
+    const s = new Set(state.voted);
+    ["north", "isan"].forEach((x) => s.delete(`${key}:${x}`));
+    if (v) s.add(`${key}:${v}`);
+    set({ voted: s });
+    saveSet(VOTED_KEY, s);
   };
-  const bump = (d) => set({ shops: state.shops.map((s) => (s.id === id ? { ...s, [col]: Math.max(0, (s[col] || 0) + d) } : s)) });
-  flip(on);
-  bump(on ? 1 : -1);
+  setMine(add);
+  setVotes(r, bump(add, remove, 1));
   try {
-    const rows = await api("/rest/v1/rpc/vote_style", {
+    const rows = await api(r.user ? "/rest/v1/rpc/vote_style" : "/rest/v1/rpc/vote_official", {
       method: "POST",
-      body: JSON.stringify({ shop_id: id, style: k, delta: on ? 1 : -1 }),
+      body: JSON.stringify({ ...(r.user ? { shop_id: r.id } : { shop_key: officialKey(r) }), add_style: add, remove_style: remove }),
     });
-    const r = Array.isArray(rows) ? rows[0] : rows;
-    if (r && typeof r.north_votes === "number") {
-      set({ shops: state.shops.map((s) => (s.id === id ? { ...s, north_votes: r.north_votes, isan_votes: r.isan_votes } : s)) });
-    }
+    const v = Array.isArray(rows) ? rows[0] : rows;
+    if (v && typeof v.north_votes === "number") setVotes(r, () => ({ north: v.north_votes, isan: v.isan_votes }));
   } catch {
-    flip(!on);
-    bump(on ? -1 : 1);
+    setMine(cur);
+    setVotes(r, bump(add, remove, -1));
     alert("โหวตไม่สำเร็จ ลองใหม่อีกครั้ง");
   }
 }

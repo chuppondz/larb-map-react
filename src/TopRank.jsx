@@ -4,8 +4,8 @@ import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
-import { ENABLED, useUserShops, loadUserShops, byLikes } from "./userShops.js";
-import { matchCity, hasStyle } from "./utils.js";
+import { ENABLED, useUserShops, loadUserShops, byLikes, hasStyle } from "./userShops.js";
+import { matchCity } from "./utils.js";
 import { StyleTags, StyleChips, StyleVote } from "./Style.jsx";
 
 const enc = encodeURIComponent;
@@ -23,7 +23,7 @@ function Item({ r, i, showCity }) { // i = อันดับจริง (ไ�
         <StyleTags r={r} />
         {showCity && <a className="tr-city" href={`#/toprank/${enc(r.city)}`}>📍 {r.city}</a>}
         {r.note && <p>💬 {r.note}</p>}
-        <StyleVote id={r.id} />
+        <StyleVote r={r} />
         <div className="tr-links">
           <a target="_blank" rel="noopener noreferrer"
              href={`https://www.google.com/maps/dir/?api=1&destination=${r.la},${r.lo}`}>🧭 นำทาง</a>

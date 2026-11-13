@@ -111,26 +111,13 @@ export function parseMapsLink(text) {
   return out;
 }
 
-// ประเภทลาบ (สไตล์) — ร้านหนึ่งเป็นได้ทั้งสองแบบ
+// ประเภทลาบ — มาจากโหวตของผู้ใช้ (หรือกำหนดเองใน data.js) ไม่เดาจากชื่อร้าน
 export const STYLES = {
-  north: { label: "ลาบเหนือ", emoji: "🏔️",
-    rx: /เหนือ|ลาบเมือง|ล้านนา|คั่ว|เชียงใหม่|เชียงราย|น่าน|แพร่|พะเยา|ลำปาง|ลำพูน|แม่ฮ่องสอน|northern|lanna/i },
-  isan: { label: "ลาบอีสาน", emoji: "🌾",
-    rx: /อีสาน|ยโส|อุบล|ร้อยเอ็ด|ขอนแก่น|โคราช|สกล|นครพนม|ชัยภูมิ|ศรีสะเกษ|มหาสารคาม|กาฬสินธุ์|อุดร|หนองคาย|มุกดาหาร|ก้อย|isan|e-?san/i },
+  north: { label: "ลาบเหนือ", emoji: "🏔️" },
+  isan: { label: "ลาบอีสาน", emoji: "🌾" },
 };
 export const STYLE_KEYS = Object.keys(STYLES);
-export const guessStyles = (name) => STYLE_KEYS.filter((k) => STYLES[k].rx.test(name || ""));
-// ร้านจากผู้ใช้: แสดงประเภทที่ได้โหวต ≥ ครึ่งหนึ่งของแบบที่ได้มากสุด (เช่น 5:1 = เหนือ, 3:2 = ทั้งสองแบบ)
-export const stylesFromVotes = (r) => {
-  const v = { north: r.north_votes || 0, isan: r.isan_votes || 0 };
-  const top = Math.max(v.north, v.isan);
-  return top ? STYLE_KEYS.filter((k) => v[k] > 0 && v[k] * 2 >= top) : [];
-};
-// ลำดับ: กำหนดใน data.js > ผลโหวต (ร้านจากผู้ใช้) > เดาจากชื่อร้าน
-export const stylesOf = (r) => {
-  if (r.styles?.length) return { styles: r.styles, guessed: false };
-  const voted = r.user ? stylesFromVotes(r) : [];
-  if (voted.length) return { styles: voted, guessed: false };
-  return { styles: guessStyles(r.name), guessed: true };
-};
-export const hasStyle = (r, k) => !k || stylesOf(r).styles.includes(k);
+// ฝั่งที่ได้โหวตมากกว่าได้ป้าย · เสมอกัน/ยังไม่มีโหวต = ไม่ชัวร์ ไม่ขึ้นป้าย
+export const majority = (v) => (!v ? [] : v.north > v.isan ? ["north"] : v.isan > v.north ? ["isan"] : []);
+// คีย์ของร้านจาก Google สำหรับเก็บโหวต: placeId หรือ ชื่อ|จังหวัด ถ้าไม่มี placeId
+export const officialKey = (r) => r.pid || `n:${r.name}|${r.city}`;

@@ -4,11 +4,10 @@ import Nav from "./Nav.jsx";
 import Footer from "./Footer.jsx";
 import { R } from "./data.js";
 import { color, score, rankByCity, matchCity } from "./utils.js";
-import { ENABLED, useUserShops, loadUserShops, byLikes } from "./userShops.js";
+import { ENABLED, useUserShops, loadUserShops, byLikes, hasStyle } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 import AddShop from "./AddShop.jsx";
 import { StyleTags, StyleChips, StyleVote } from "./Style.jsx";
-import { hasStyle } from "./utils.js";
 
 const RANKED = rankByCity(R);
 const CITIES = Object.keys(RANKED).sort((a, b) => a.localeCompare(b, "th"));
@@ -29,6 +28,7 @@ function Shop({ r, i, city }) {
         </div>
         <div className="r">📍 {r.area} <span>· 🕒 {r.hrs}</span></div>
         {r.tel && <div className="r">📞 <a href={`tel:${tel}`}>{r.tel}</a></div>}
+        <StyleVote r={r} />
         <div className="acts">
           <a className="p" target="_blank" rel="noopener noreferrer"
              href={`https://www.google.com/maps/dir/?api=1&destination=${r.la},${r.lo}&destination_place_id=${r.pid}`}>นำทาง</a>
@@ -50,7 +50,7 @@ function UserShop({ r, i, city }) {
         <StyleTags r={r} />
         <div className="r"><LikeBtn id={r.id} /> <span>👍 แนะนำโดยผู้ใช้</span></div>
         {r.note && <div className="r">💬 {r.note}</div>}
-        <StyleVote id={r.id} />
+        <StyleVote r={r} />
         <div className="acts">
           <a className="p" target="_blank" rel="noopener noreferrer" href={url}>Google Maps</a>
           <a href={`#/map/${enc(city)}/${enc("u:" + r.id)}`}>ดูบนแผนที่</a>
@@ -61,7 +61,7 @@ function UserShop({ r, i, city }) {
 }
 
 export default function Ranking({ city, q: q0 = "" }) {
-  const { shops, loaded, error } = useUserShops();
+  const { shops, loaded, error, ovotes } = useUserShops();
   const [adding, setAdding] = useState(false);
   useEffect(() => { loadUserShops(); }, []);
   const userCount = useMemo(() => shops.reduce((m, s) => ((m[s.city] = (m[s.city] || 0) + 1), m), {}), [shops]);
@@ -73,9 +73,9 @@ export default function Ranking({ city, q: q0 = "" }) {
   useEffect(() => setStyleF(""), [valid]);
   // Top 10 ตามประเภทที่เลือก: จัดอันดับร้านทั้งจังหวัดก่อน แล้วค่อยกรองประเภท
   const cityAll = useMemo(() => (valid ? R.filter((r) => r.city === valid).sort((a, b) => score(b) - score(a)) : []), [valid]);
-  const top = useMemo(() => cityAll.filter((r) => hasStyle(r, styleF)).slice(0, 10), [cityAll, styleF]);
+  const top = useMemo(() => cityAll.filter((r) => hasStyle(r, styleF)).slice(0, 10), [cityAll, styleF, ovotes]);
   const styleCounts = useMemo(() => ({ all: cityAll.length,
-    north: cityAll.filter((r) => hasStyle(r, "north")).length, isan: cityAll.filter((r) => hasStyle(r, "isan")).length }), [cityAll]);
+    north: cityAll.filter((r) => hasStyle(r, "north")).length, isan: cityAll.filter((r) => hasStyle(r, "isan")).length }), [cityAll, ovotes]);
   const userTop = useMemo(() => shops.filter((s) => s.city === valid && hasStyle(s, styleF)).sort(byLikes), [shops, valid, styleF]);
   const matches = useMemo(() => CITIES.filter((c) => matchCity(c, q)), [q]);
   const showGrid = !valid || q.trim();
@@ -140,7 +140,7 @@ export default function Ranking({ city, q: q0 = "" }) {
               <ol className="rklist">
                 {top.map((r, i) => <Shop key={r.id} r={r} i={i} city={valid} />)}
               </ol>
-              {!top.length && <p>ยังไม่มีร้านประเภทนี้ใน จ.{valid} (นับจากชื่อร้าน)</p>}
+              {!top.length && <p>ยังไม่มีร้านที่ชาวลาบโหวตเป็น{styleF === "north" ? "ลาบเหนือ" : "ลาบอีสาน"}ใน จ.{valid} — กด “ทุกแบบ” แล้วช่วยกันโหวตได้ที่การ์ดของแต่ละร้าน</p>}
               <p className="note" style={{ marginTop: 18 }}>
                 จัดอันดับจากดาวและจำนวนรีวิวบน Google Maps รวมกัน (Bayesian average) ร้านที่ได้ 5 ดาวแต่มีรีวิวน้อย
                 จะไม่ถูกดันขึ้นอันดับต้นเกินจริง · ข้อมูล ณ วันที่รวบรวม เวลาเปิด-ปิดอาจเปลี่ยนแปลง
