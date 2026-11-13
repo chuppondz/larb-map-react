@@ -80,6 +80,9 @@ export const userPinIcon = (likes, on) =>
     html: `<div class="upin${on ? " on" : ""}">👍${likes > 0 ? `<b>${likes > 999 ? "999+" : likes}</b>` : ""}</div>`,
   });
 
+// ชื่อสถานที่จากลิงก์ Google บางทีมีที่อยู่ต่อท้าย: "ร้าน 泰兄弟, No. 1號, Siyuan St, ..." -> "ร้าน 泰兄弟"
+export const cleanPlaceName = (s) => (s || "").split(/[,，]/)[0].trim().slice(0, 80);
+
 export const inThailand = (lat, lng) => lat > 5 && lat < 21 && lng > 97 && lng < 106;
 
 const safeDecode = (s) => { try { return decodeURIComponent(s); } catch { return s; } };

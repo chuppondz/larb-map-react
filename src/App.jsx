@@ -120,7 +120,11 @@ export default function App({ focus }) {
     setSel(r);
     setDist(d);
     const z = Math.max(map.getZoom(), 14);
-    map.flyTo([r.la - 0.0012 * Math.pow(2, 14 - z), r.lo], z, { duration: 0.6 });
+    const target = [r.la - 0.0012 * Math.pow(2, 14 - z), r.lo];
+    const c = map.getCenter();
+    // ไกลเกิน 200 กม. (เช่น ข้ามประเทศ) กระโดดไปทันที: แอนิเมชันระยะไกลโดนนิ้วแตะจอแล้วหยุดกลางทางง่าย
+    if (km(c.lat, c.lng, r.la, r.lo) > 200) map.setView(target, z, { animate: false });
+    else map.flyTo(target, z, { duration: 0.6 });
   };
   const close = () => { setSel(null); setDist(null); };
 

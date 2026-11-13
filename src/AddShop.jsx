@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { R } from "./data.js";
-import { km, parseMapsLink, inThailand, userPinIcon, STYLES, STYLE_KEYS } from "./utils.js";
+import { km, parseMapsLink, inThailand, cleanPlaceName, userPinIcon, STYLES, STYLE_KEYS } from "./utils.js";
 import { useUserShops, addUserShop, resolveShortLink } from "./userShops.js";
 import LikeBtn from "./Like.jsx";
 
@@ -42,7 +42,7 @@ export default function AddShop({ city: city0 = "", onClose, onAdded }) {
 
   const apply = (p) => {
     if (p.name && !name) {
-      setName(p.name.slice(0, 80));
+      setName(cleanPlaceName(p.name));
     }
     if (p.lat != null) {
       setCoords(`${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}`);
