@@ -71,7 +71,7 @@ export const rankHref = (q, cities) => {
   return q.trim() ? `#/ranking?q=${encodeURIComponent(q.trim())}` : "#/ranking";
 };
 
-// หมุดร้านแนะนำจากผู้ใช้: วงกลมสีม่วง 👍 + ยอดไลก์ (คนละแบบกับหมุดพริกของร้านจาก Google)
+// หมุดร้านแนะนำจากผู้ใช้: วงกลมสีน้ำเงิน 👍 + ยอดไลก์ (คนละแบบกับหมุดพริกของร้านจาก Google)
 export const userPinIcon = (likes, on) =>
   L.divIcon({
     className: "",

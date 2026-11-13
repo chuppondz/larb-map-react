@@ -78,11 +78,11 @@ header#top {
 .rk .acts{max-width:360px}
 @media(max-width:760px){.rk{gap:10px;padding:12px}.rk .no{width:32px}}
 /* ร้านแนะนำจากผู้ใช้ */
-:root{--u:#7a4bd8;--ub:#1e6b45} /* --u = หมุด/ป้ายร้านจากผู้ใช้, --ub = ปุ่ม */
+:root{--u:#2f5fa7;--ub:#1e6b45} /* --u = หมุด/ป้ายร้านจากผู้ใช้, --ub = ปุ่ม */
 .upin{position:relative;width:32px;height:32px;border-radius:50%;background:var(--u);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 6px #0006;transition:transform .15s}
 .upin.on{transform:scale(1.3)}
 .upin b{position:absolute;top:-8px;right:-12px;background:#fff;color:var(--u);border:1.5px solid var(--u);border-radius:10px;font-size:10px;line-height:14px;padding:0 4px;font-family:'Noto Sans Thai',system-ui,sans-serif}
-.ubadge{display:inline-block;background:#efe8fc;color:var(--u);border-radius:10px;padding:0 8px;font-size:12px;font-weight:600}
+.ubadge{display:inline-block;background:#e5edf8;color:var(--u);border-radius:10px;padding:0 8px;font-size:12px;font-weight:600}
 .like{border:1.5px solid var(--bd);background:#fff;border-radius:18px;padding:2px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--tx)}
 .like.on{border-color:#e0245e;background:#fff0f4}
 .like b{font-weight:700}
@@ -91,8 +91,8 @@ header#top {
 .usec{margin-top:34px;padding-top:24px;border-top:1px dashed var(--bd)}
 .uhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .uhead h2{margin:0}
-.rk.u{border-color:#d9ccf5}
-.rk.u .no{background:#efe8fc;color:var(--u)}
+.rk.u{border-color:#c9d8ee}
+.rk.u .no{background:#e5edf8;color:var(--u)}
 .rk.u .acts a.p{background:var(--ub);border-color:var(--ub)}
 .modal{position:fixed;inset:0;z-index:3000;background:#0007;display:flex;align-items:flex-end;justify-content:center;padding:16px}
 @media(min-width:600px){.modal{align-items:center}}
@@ -103,7 +103,7 @@ header#top {
 .mcard input:focus,.mcard select:focus{outline:none;border-color:var(--u)}
 .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
 .mini{height:150px;border-radius:12px;overflow:hidden;margin-top:10px;border:1px solid var(--bd)}
-.dup{margin-top:10px;font-size:14px;background:#efe8fc;border-radius:10px;padding:8px 10px}
+.dup{margin-top:10px;font-size:14px;background:#e5edf8;border-radius:10px;padding:8px 10px}
 .err{margin-top:10px;font-size:14px;color:var(--acc2)}
 .btn:disabled{opacity:.6;cursor:wait}
 /* หน้านโยบาย */
@@ -124,9 +124,9 @@ details p a{color:var(--acc)}
 .tr-filter .chip{text-decoration:none;white-space:nowrap}
 .tr-filter .chip.on{background:var(--ub);border-color:var(--ub);color:#fff}
 .tr-list{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:10px}
-.tr-item{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid #e4dbf6;border-radius:18px;padding:14px 14px 12px}
-.tr-item.top{border-color:#c9b6f2;box-shadow:0 4px 14px #7a4bd81a}
-.tr-no{flex:none;width:38px;height:38px;border-radius:50%;background:#efe8fc;color:var(--u);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px}
+.tr-item{display:flex;align-items:flex-start;gap:12px;background:var(--card);border:1px solid #d8e3f2;border-radius:18px;padding:14px 14px 12px}
+.tr-item.top{border-color:#b7cbe8;box-shadow:0 4px 14px #2f5fa71a}
+.tr-no{flex:none;width:38px;height:38px;border-radius:50%;background:#e5edf8;color:var(--u);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px}
 .tr-item.top .tr-no{background:none;font-size:28px}
 .tr-bd{flex:1;min-width:0}
 .tr-bd h3{margin:2px 0 2px;font-size:17px;line-height:1.35}
@@ -135,5 +135,5 @@ details p a{color:var(--acc)}
 .tr-links{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:13px}
 .tr-links a{color:var(--mut)}
 .tr-item .like{flex:none;margin-top:4px}
-.tr-empty{background:var(--card);border:1px dashed #c9b6f2;border-radius:18px;padding:22px;text-align:center;margin-top:10px}
+.tr-empty{background:var(--card);border:1px dashed #b7cbe8;border-radius:18px;padding:22px;text-align:center;margin-top:10px}
 .tr-empty p{margin:0 0 12px}
